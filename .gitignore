@@ -1,0 +1,27 @@
+# Ignore log files
+*.log
+# Ignore compiled Python files
+__pycache__/
+*.pyc
+# Ignore database files
+*.db
+# Ignore coverage reports
+htmlcov/
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+# Ignore virtual environment directories
+venv/
+# Ignore IDE specific files
+.vscode/
+.idea/
+# Ignore system files
+.DS_Store
+# Ignore other files or directories as needed
+# Ignore any other files or directories that should not be committed to the repository
+# For example, you can ignore a specific file or directory like this:
+# /path/to/file_or_directory
+
+# Variables de entorno
+.env/
+
+.env

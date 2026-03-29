@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Détail hackathon — HackENSAE</title>
+  <link rel="stylesheet" href="../css/design-system.css"/>
+  <style>
+    .detail-layout {
+      display: grid;
+      grid-template-columns: minmax(0,1fr) 300px;
+      gap: var(--space-8);
+      align-items: start;
+      padding-block: var(--space-8);
+    }
+    @media (max-width: 900px) {
+      .detail-layout { grid-template-columns: 1fr; }
+    }
+
+    /* ── Hero ─────────────────────────────────────────────── */
+    .detail-hero {
+      position: relative;
+      overflow: hidden;
+      border-radius: var(--radius-xl);
+      margin-bottom: var(--space-6);
+    }
+    .detail-hero__bg {
+      padding: var(--space-10) var(--space-8) var(--space-8);
+    }
+    .detail-hero__bg::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        radial-gradient(circle at 80% 20%, rgba(255,255,255,0.06) 0%, transparent 50%),
+        radial-gradient(circle at 10% 90%, rgba(255,255,255,0.04) 0%, transparent 40%);
+    }
+    .detail-hero__content { position: relative; z-index: 1; }
+    .detail-hero h1 { color: var(--white); font-size: clamp(1.4rem,3vw,2rem); margin-bottom: var(--space-2); }
+    .detail-hero__org { color: rgba(255,255,255,0.7); font-size: 0.9rem; margin-bottom: var(--space-5); }
+    .detail-hero__meta {
+      display: flex; gap: var(--space-6); flex-wrap: wrap;
+      padding-top: var(--space-5);
+      border-top: 1px solid rgba(255,255,255,0.12);
+    }
+    .detail-meta-item__label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 3px; }
+    .detail-meta-item__value { font-size: 0.9rem; font-weight: 500; color: var(--white); }
+
+    /* ── Nav tabs ─────────────────────────────────────────── */
+    .detail-tabs {
+      display: flex; gap: 0;
+      border-bottom: 1px solid var(--gray-200);
+      margin-bottom: var(--space-6);
+    }
+    .detail-tab {
+      padding: 10px var(--space-5);
+      font-size: 0.875rem; color: var(--gray-500);
+      border: none; background: none; cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: all var(--transition);
+    }
+    .detail-tab:hover  { color: var(--blue-700); }
+    .detail-tab.active { color: var(--blue-800); border-bottom-color: var(--blue-600); font-weight: 500; }
+
+    /* ── Phase timeline ───────────────────────────────────── */
+    .tl { display: flex; flex-direction: column; gap: 0; position: relative; }
+    .tl::before {
+      content: ''; position: absolute;
+      left: 15px; top: 22px; bottom: 22px;
+      width: 1px; background: var(--gray-200);
+    }
+    .tl-item { display: flex; gap: var(--space-4); padding-bottom: var(--space-5); position: relative; }
+    .tl-item:last-child { padding-bottom: 0; }
+    .tl-dot {
+      width: 30px; height: 30px; border-radius: 50%;
+      border: 2px solid var(--gray-200); background: var(--white);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; z-index: 1;
+      font-size: 0.72rem; font-weight: 500; color: var(--gray-400);
+      transition: all var(--transition);
+    }
+    .tl-dot.done    { background: var(--success-mid); border-color: var(--success-mid); color: var(--white); }
+    .tl-dot.current { background: var(--blue-600);   border-color: var(--blue-600);    color: var(--white); }
+    .tl-body { flex: 1; padding-top: 4px; }
+    .tl-body h4 { font-size: 0.875rem; color: var(--gray-900); margin-bottom: 3px; }
+    .tl-body p  { font-size: 0.8125rem; color: var(--gray-500); line-height: 1.6; }
+    .tl-date    { font-size: 0.75rem; color: var(--blue-500); margin-top: 4px; }
+
+    /* ── Règles ───────────────────────────────────────────── */
+    .rule-row {
+      display: flex; gap: var(--space-3);
+      padding: var(--space-3) 0;
+      border-bottom: 1px solid var(--gray-100);
+      align-items: flex-start;
+    }
+    .rule-row:last-child { border-bottom: none; }
+    .rule-icon {
+      width: 28px; height: 28px; border-radius: var(--radius-sm);
+      background: var(--blue-50); display: flex; align-items: center;
+      justify-content: center; flex-shrink: 0;
+    }
+    .rule-icon svg { width: 14px; height: 14px; stroke: var(--blue-600); }
+    .rule-text { font-size: 0.875rem; color: var(--gray-700); line-height: 1.5; padding-top: 4px; }
+
+    /* ── Sidebar sticky card ──────────────────────────────── */
+    .sidebar-sticky {
+      position: sticky;
+      top: calc(var(--nav-height) + var(--space-4));
+    }
+    .cta-card {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      margin-bottom: var(--space-4);
+    }
+    .cta-card__header {
+      padding: var(--space-5);
+      border-bottom: 1px solid var(--gray-100);
+    }
+    .cta-card__price {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      color: var(--blue-900);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .cta-card__price-label { font-size: 0.8125rem; color: var(--gray-500); }
+    .cta-card__body { padding: var(--space-5); }
+    .cta-detail-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 7px 0; border-bottom: 1px solid var(--gray-100);
+      font-size: 0.8125rem;
+    }
+    .cta-detail-row:last-child { border-bottom: none; }
+    .cta-detail-row__label { color: var(--gray-500); }
+    .cta-detail-row__val   { font-weight: 500; color: var(--gray-900); }
+    .cta-detail-row__val.soon { color: var(--warning-mid); }
+
+    /* ── Équipes inscrits ─────────────────────────────────── */
+    .equipe-row {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: var(--space-3) 0;
+      border-bottom: 1px solid var(--gray-100);
+    }
+    .equipe-row:last-child { border-bottom: none; }
+    .equipe-avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: var(--blue-100); color: var(--blue-800);
+      font-size: 0.8125rem; font-weight: 500;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .equipe-name    { font-size: 0.875rem; font-weight: 500; }
+    .equipe-members { font-size: 0.75rem; color: var(--gray-500); }
+
+    /* ── Domaines / thématiques grid ──────────────────────── */
+    .themes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: var(--space-2);
+    }
+    .theme-pill {
+      padding: var(--space-2) var(--space-3);
+      border: 1px solid var(--blue-100);
+      border-radius: var(--radius-md);
+      background: var(--blue-25);
+      font-size: 0.8125rem; color: var(--blue-800);
+      text-align: center;
+    }
+
+    /* ── Jury ─────────────────────────────────────────────── */
+    .jury-card {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-md);
+    }
+    .jury-avatar {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: var(--blue-900); color: var(--white);
+      font-size: 0.8125rem; font-weight: 500;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .jury-name  { font-size: 0.875rem; font-weight: 500; color: var(--gray-900); }
+    .jury-role  { font-size: 0.75rem; color: var(--gray-500); }
+  </style>
+</head>
+<body>
+
+<header>
+  <nav class="navbar">
+    <div class="container navbar__inner">
+      <a href="../index.html" class="navbar__logo">
+        <div class="navbar__logo-mark">
+          <svg viewBox="0 0 18 18" fill="none">
+            <path d="M3 14L9 4L15 14" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M5.5 10H12.5" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <span class="navbar__logo-text">HackENSAE</span>
+      </a>
+      <div class="navbar__links">
+        <a href="../index.html" class="navbar__link active">Hackathons</a>
+        <a href="./mon-espace.html" class="navbar__link">Mon espace</a>
+        <a href="./resultats.html" class="navbar__link">Résultats</a>
+      </div>
+      <div class="navbar__actions">
+        <a href="./login.html" class="btn btn-ghost btn-sm">Se connecter</a>
+        <a href="./login.html" class="btn btn-nav btn-sm">S'inscrire</a>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<!-- Breadcrumb -->
+<div style="background:var(--gray-50);border-bottom:1px solid var(--gray-200);padding:10px 0;">
+  <div class="container" style="display:flex;align-items:center;gap:var(--space-2);font-size:0.8125rem;color:var(--gray-500);">
+    <a href="../index.html" style="color:var(--blue-600);">Hackathons</a>
+    <span>/</span>
+    <span id="breadcrumb-title">Chargement…</span>
+  </div>
+</div>
+
+<main>
+  <div class="container">
+    <div class="detail-layout">
+
+      <!-- Contenu principal -->
+      <div>
+        <!-- Hero -->
+        <div class="detail-hero" id="detail-hero"></div>
+
+        <!-- Tabs -->
+        <div class="detail-tabs">
+          <button class="detail-tab active" onclick="showTab('presentation',this)">Présentation</button>
+          <button class="detail-tab" onclick="showTab('programme',this)">Programme</button>
+          <button class="detail-tab" onclick="showTab('regles',this)">Règles</button>
+          <button class="detail-tab" onclick="showTab('equipes',this)">Équipes <span id="equipes-count" style="font-size:0.75rem;color:var(--gray-400);margin-left:3px;"></span></button>
+        </div>
+
+        <!-- Tab: Présentation -->
+        <div id="tab-presentation">
+          <div id="presentation-content"></div>
+        </div>
+
+        <!-- Tab: Programme -->
+        <div id="tab-programme" class="hidden">
+          <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:var(--space-6);">
+            <h3 style="color:var(--blue-900);margin-bottom:var(--space-6);">Déroulement de la compétition</h3>
+            <div class="tl" id="programme-timeline"></div>
+          </div>
+        </div>
+
+        <!-- Tab: Règles -->
+        <div id="tab-regles" class="hidden">
+          <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:var(--space-6);margin-bottom:var(--space-4);">
+            <h3 style="color:var(--blue-900);margin-bottom:var(--space-5);">Règles de participation</h3>
+            <div id="regles-list"></div>
+          </div>
+          <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:var(--space-6);" id="jury-section"></div>
+        </div>
+
+        <!-- Tab: Équipes -->
+        <div id="tab-equipes" class="hidden">
+          <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:var(--space-6);">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-5);">
+              <h3 style="color:var(--blue-900);">Équipes inscrites</h3>
+              <span id="equipes-total-badge" class="badge badge-blue"></span>
+            </div>
+            <div id="equipes-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside class="sidebar-sticky">
+        <div class="cta-card" id="cta-card"></div>
+        <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:var(--space-5);" id="sidebar-info"></div>
+      </aside>
+
+    </div>
+  </div>
+</main>
+
+<script src="../js/utils.js"></script>
+<script>
+/* ── Données ─────────────────────────────────────────────── */
+const HACKATHONS = {
+  1: {
+    id: 1, type: 'tech',
+    titre: 'Tech & Data Innovation 2025',
+    organisateur: 'Club Informatique ENSAE · Bureau des Statistiques AES',
+    statut: 'inscriptions',
+    phase_actuelle: 2, phases_total: 6,
+    taille_equipe_min: 1, taille_equipe_max: 4,
+    description: `Le Hackathon Tech & Data Innovation est une initiative portée par le Club Informatique de l'ENSAE, en collaboration avec le Bureau des Statistiques de l'AES. Pendant un mois, les équipes travailleront intensivement sur des problématiques concrètes en développant des solutions technologiques basées sur les données.
+
+L'objectif n'est pas seulement d'analyser des données, mais de concevoir des prototypes fonctionnels, développer des applications web ou mobiles, implémenter des modèles prédictifs, construire des tableaux de bord interactifs, et proposer des outils digitaux innovants.`,
+    date_fin_inscriptions: new Date(Date.now() + 8 * 86400000).toISOString(),
+    date_formation: '15 avr. 2025',
+    date_soumission: '10 mai 2025',
+    date_evaluation: '15 mai 2025',
+    nb_equipes: 24,
+    heroBg: 'linear-gradient(135deg, #042C53 0%, #0C447C 100%)',
+    phases: [
+      { label: 'Communication',  desc: 'Diffusion via affiches, vidéos et groupes WhatsApp. Passages dans les classes pour encourager la participation.', date: 'Mars 2025', done: true },
+      { label: 'Inscriptions',   desc: 'Formulaire ouvert pendant 10 jours. Les équipes de 1 à 4 membres s\'inscrivent et choisissent leur domaine.', date: '1 – 10 avr. 2025', current: true },
+      { label: 'Formation',      desc: 'Session de présentation des outils de développement et d\'intelligence artificielle utiles pour les projets.', date: '15 avr. 2025', done: false },
+      { label: 'Développement',  desc: '3 semaines de développement. Une équipe de suivi accompagne les participants et répond aux questions techniques.', date: '16 avr. – 7 mai 2025', done: false },
+      { label: 'Soumission',     desc: 'Les équipes envoient le lien de leur repository GitHub contenant le code source et la documentation.', date: '10 mai 2025', done: false },
+      { label: 'Évaluation',     desc: 'Le jury évalue les projets selon les critères : architecture, originalité, impact, déployabilité, utilisation des statistiques.', date: '15 mai 2025', done: false },
+    ],
+    domaines: ['Agriculture', 'Santé', 'Education', 'Finance', 'Environnement', 'Entreprise'],
+    competences: ['Python', 'R', 'SQL', 'Développement web', 'IA / ML', 'Data viz'],
+    livrables: ['Prototype fonctionnel', 'Documentation technique', 'Démonstration live (pitch)', 'Poster scientifique'],
+    regles: [
+      { icon: 'users', text: '1 à 4 membres par équipe, étudiants ENSAE uniquement.' },
+      { icon: 'code', text: 'Le livrable doit être un prototype fonctionnel et déployable.' },
+      { icon: 'github', text: 'Le code source doit être soumis via un repository GitHub public.' },
+      { icon: 'mic', text: 'Une démonstration live (pitch technique) est obligatoire en phase finale.' },
+      { icon: 'file', text: 'Un poster scientifique exposant la méthodologie et l\'architecture est requis.' },
+      { icon: 'clock', text: 'La soumission doit intervenir avant la deadline du 10 mai 2025.' },
+    ],
+    jury: null,
+    equipes: [
+      { nom: 'DataMinds',   membres: 4, domaine: 'Agriculture' },
+      { nom: 'StatVision',  membres: 3, domaine: 'Santé' },
+      { nom: 'CodeForge',   membres: 4, domaine: 'Finance' },
+      { nom: 'InnovaData',  membres: 2, domaine: 'Education' },
+      { nom: 'AILab ENSAE', membres: 4, domaine: 'Environnement' },
+    ],
+  },
+  2: {
+    id: 2, type: 'datajournalisme',
+    titre: 'Datajournalisme 2026',
+    organisateur: 'Club Presse ENSAE',
+    statut: 'a_venir',
+    phase_actuelle: 1, phases_total: 5,
+    taille_equipe_min: 1, taille_equipe_max: 3,
+    description: `Le concours Datajournalisme se déroule durant le mois de la statistique, organisé par le Club Presse de l'ENSAE. L'objectif est de mettre en avant les compétences en traitement et analyse des données statistiques, tout en développant les facultés communicatives et rédactionnelles des étudiants.
+
+Les équipes produiront une production journalistique complète — article web, reportage vidéo ou vocal — accompagnée d'un rapport explicatif détaillant la démarche d'analyse statistique. Les thématiques sont imposées par l'organisation.`,
+    date_fin_inscriptions: null,
+    date_soumission: 'Fin mois stat.',
+    date_evaluation: 'Après clôture',
+    nb_equipes: 0,
+    heroBg: 'linear-gradient(135deg, #065F46 0%, #0F6E56 100%)',
+    phases: [
+      { label: 'Communication',  desc: 'Campagne intensive expliquant le datajournalisme. Vidéo explicative et exposition de travaux d\'alumni. Affiches sur les faits historiques du datajournalisme.', date: '2 semaines avant', current: true },
+      { label: 'Lancement',      desc: 'Ouverture officielle du concours. Les inscriptions sont ouvertes et les équipes choisissent leur thématique parmi les 7 sujets imposés.', date: 'Début mois stat.', done: false },
+      { label: 'Production',     desc: 'Les équipes disposent du mois entier pour produire leur livrable et rédiger le rapport explicatif de leur démarche d\'analyse.', date: 'Mois de la stat.', done: false },
+      { label: 'Soumission',     desc: 'Dépôt du lien du livrable (article web, vidéo ou vocal) et téléversement du rapport PDF via la plateforme.', date: 'Fin mois stat.', done: false },
+      { label: 'Évaluation',     desc: 'Le jury de 3 experts évalue les productions selon la qualité journalistique, la rigueur statistique et l\'impact du contenu.', date: 'Après clôture', done: false },
+    ],
+    thematiques: ['Le climat', 'L\'éducation', 'Conséquences économiques d\'une guerre', 'La santé', 'Conditions de vie des enfants', 'L\'économie en général', 'La finance'],
+    livrables: ['Reportage vidéo', 'Article web', 'Reportage vocal', 'Rapport explicatif (PDF)'],
+    regles: [
+      { icon: 'users', text: '1 à 3 membres par équipe, étudiants ENSAE uniquement.' },
+      { icon: 'tag', text: 'Une seule thématique par équipe, choisie parmi les 7 sujets imposés.' },
+      { icon: 'film', text: 'Livrable : article web, reportage vidéo ou reportage vocal.' },
+      { icon: 'file', text: 'Un rapport PDF expliquant la démarche d\'analyse statistique est obligatoire.' },
+      { icon: 'link', text: 'Le lien soumis doit rester accessible publiquement pendant toute la période d\'évaluation.' },
+    ],
+    jury: [
+      { nom: 'M. Mamadou Diop', role: 'Expert en journalisme de données' },
+      { nom: 'M. Jean Pierre Adiouma Ndiaye', role: 'Spécialiste en communication' },
+      { nom: 'Mme Iphygénie Sarr', role: 'Analyste statisticienne' },
+    ],
+    prix: [
+      { rang: '1er prix', montant: '50 000 FCFA' },
+      { rang: '2e prix',  montant: '35 000 FCFA' },
+    ],
+    equipes: [],
+  }
+};
+
+/* ── Données chargées depuis l'API ───────────────────────── */
+let H = null;
+let isTech = true;
+let accentColor = 'var(--blue-600)';
+
+/* ── Render hero ─────────────────────────────────────────── */
+function renderHero() {
+  document.title = `${H.titre} — HackENSAE`;
+  document.getElementById('breadcrumb-title').textContent = H.titre;
+  const days = H.date_fin_inscriptions ? daysUntil(H.date_fin_inscriptions) : null;
+  const daysHTML = days !== null && days >= 0
+    ? `<div class="detail-meta-item"><div class="detail-meta-item__label" style="color:rgba(255,255,255,0.5);">Ferme dans</div><div class="detail-meta-item__value" style="color:${days<=5?'#FDE68A':'var(--white)'};">${days} jour${days!==1?'s':''}</div></div>`
+    : '';
+  const heroBg = isTech ? 'linear-gradient(135deg,#042C53 0%,#0C447C 100%)' : 'linear-gradient(135deg,#065F46 0%,#0F6E56 100%)';
+  const orgColor = isTech ? 'var(--blue-200)' : 'rgba(159,225,203,0.9)';
+  document.getElementById('detail-hero').innerHTML = `
+    <div class="detail-hero__bg" style="background:${heroBg};">
+      <div class="detail-hero__content">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-4);flex-wrap:wrap;margin-bottom:var(--space-4);">
+          <div>${statusBadge(H.statut)}</div>
+          <a href="./inscription.html?id=${H.id}" class="btn" style="background:rgba(255,255,255,0.15);color:var(--white);border:1px solid rgba(255,255,255,0.3);">S'inscrire</a>
+        </div>
+        <h1 style="color:var(--white);font-size:1.5rem;margin-bottom:4px;">${H.titre}</h1>
+        <p style="color:${orgColor};font-size:0.875rem;margin-bottom:var(--space-5);">${H.organisateur}</p>
+        <div class="hero-banner__meta">
+          <div class="hero-meta-item"><span class="hero-meta-item__label" style="color:rgba(255,255,255,0.5);">Équipe</span><span class="hero-meta-item__value">1 à ${H.taille_equipe_max} membres</span></div>
+          <div class="hero-meta-item"><span class="hero-meta-item__label" style="color:rgba(255,255,255,0.5);">Inscrits</span><span class="hero-meta-item__value">${H.nb_equipes_inscrites||0} équipes</span></div>
+          ${daysHTML}
+          ${!isTech && H.config?.prix?.[0] ? `<div class="hero-meta-item"><span class="hero-meta-item__label" style="color:rgba(255,255,255,0.5);">1er prix</span><span class="hero-meta-item__value">${H.config.prix[0].montant}</span></div>` : ''}
+        </div>
+      </div>
+    </div>`;
+}
+
+/* ── Render présentation ─────────────────────────────────── */
+function renderPresentation() {
+  const cfg = H.config || {};
+  const items = isTech ? cfg.domaines : cfg.thematiques;
+  const itemsLabel = isTech ? 'Domaines d\'application' : 'Thématiques imposées';
+  const themesHTML = items?.length
+    ? `<div style="margin-top:var(--space-6);"><h3 style="color:var(--blue-900);margin-bottom:var(--space-3);">${itemsLabel}</h3>
+       <div class="themes-grid">${items.map(d=>`<div class="theme-pill">${d}</div>`).join('')}</div></div>`
+    : '';
+  const compHTML = isTech && cfg.competences?.length
+    ? `<div style="margin-top:var(--space-6);"><h3 style="color:var(--blue-900);margin-bottom:var(--space-3);">Compétences valorisées</h3>
+       <div style="display:flex;flex-wrap:wrap;gap:var(--space-2);">${cfg.competences.map(c=>`<span class="tag">${c}</span>`).join('')}</div></div>`
+    : '';
+  const livrables = cfg.livrables || [];
+  document.getElementById('presentation-content').innerHTML = `
+    <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:var(--space-6);margin-bottom:var(--space-4);">
+      <h3 style="color:var(--blue-900);margin-bottom:var(--space-4);">À propos</h3>
+      <div style="font-size:0.9rem;color:var(--gray-700);line-height:1.8;white-space:pre-line;">${H.description||'—'}</div>
+      ${themesHTML}${compHTML}
+    </div>
+    ${livrables.length ? `
+    <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:var(--space-6);">
+      <h3 style="color:var(--blue-900);margin-bottom:var(--space-4);">Livrables attendus</h3>
+      <div style="display:flex;flex-direction:column;gap:var(--space-2);">
+        ${livrables.map(l=>`<div style="display:flex;align-items:center;gap:var(--space-3);padding:var(--space-2) 0;">
+          <div style="width:7px;height:7px;border-radius:50%;background:${accentColor};flex-shrink:0;"></div>
+          <span style="font-size:0.875rem;color:var(--gray-700);">${l}</span></div>`).join('')}
+      </div>
+    </div>` : ''}`;
+}
+
+/* ── Render programme ────────────────────────────────────── */
+function renderProgramme() {
+  const phases = H.config?.phases || [];
+  document.getElementById('programme-timeline').innerHTML = phases.length
+    ? phases.map((p,i) => {
+        const cls = p.done?'done':p.current?'current':'';
+        const icon = p.done
+          ? `<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M2 6l3 3 5-5"/></svg>`
+          : (i+1);
+        return `<div class="tl-item">
+          <div class="tl-dot ${cls}">${icon}</div>
+          <div class="tl-body">
+            <h4>${p.label}${p.current?' <span class="badge badge-blue" style="font-size:0.65rem;padding:1px 7px;vertical-align:middle;margin-left:4px;">En cours</span>':''}</h4>
+            <p>${p.desc}</p>
+            <div class="tl-date">${p.date}</div>
+          </div>
+        </div>`;
+      }).join('')
+    : '<p style="color:var(--gray-400);font-size:0.875rem;">Programme à venir.</p>';
+}
+
+/* ── Render règles ───────────────────────────────────────── */
+function renderRegles() {
+  const regles = H.config?.regles || [];
+  document.getElementById('regles-list').innerHTML = regles.map(r => `
+    <div class="rule-row">
+      <div class="rule-icon"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+        <circle cx="8" cy="8" r="6.5"/><path d="M5.5 8l2 2 3-3"/>
+      </svg></div>
+      <span class="rule-text">${typeof r === 'string' ? r : r.text}</span>
+    </div>`).join('') || '<p style="color:var(--gray-400);">Règles à venir.</p>';
+
+  const jurySection = document.getElementById('jury-section');
+  const jury = H.config?.jury;
+  if (jury?.length) {
+    jurySection.innerHTML = `<h3 style="color:var(--blue-900);margin-bottom:var(--space-5);">Membres du jury</h3>
+      <div style="display:flex;flex-direction:column;gap:var(--space-3);">
+        ${jury.map(j => {
+          const nom = typeof j === 'string' ? j : j.nom;
+          const role = typeof j === 'object' ? j.role : '';
+          const initials = nom.split(' ').filter(w=>/^[A-Z]/i.test(w)).slice(-2).map(w=>w[0]).join('').toUpperCase();
+          return `<div class="jury-card"><div class="jury-avatar">${initials}</div>
+            <div><div class="jury-name">${nom}</div>${role?`<div class="jury-role">${role}</div>`:''}</div></div>`;
+        }).join('')}
+      </div>`;
+  } else {
+    jurySection.innerHTML = `<h3 style="color:var(--blue-900);margin-bottom:var(--space-3);">Jury</h3>
+      <p style="font-size:0.875rem;color:var(--gray-500);">Composition du jury annoncée prochainement.</p>`;
+  }
+}
+
+/* ── Render équipes ──────────────────────────────────────── */
+function renderEquipes() {
+  const equipes = H.equipes || [];
+  const count = equipes.length;
+  document.getElementById('equipes-count').textContent = `(${count})`;
+  document.getElementById('equipes-total-badge').textContent = `${count} équipe${count!==1?'s':''} inscrite${count!==1?'s':''}`;
+  if (!count) {
+    document.getElementById('equipes-list').innerHTML = `
+      <div style="text-align:center;padding:var(--space-10) var(--space-6);color:var(--gray-500);">
+        <p style="font-size:0.9rem;">Aucune équipe inscrite pour le moment.</p>
+        <a href="./inscription.html?id=${H.id}" class="btn btn-primary" style="margin-top:var(--space-4);">Être la première équipe</a>
+      </div>`;
+    return;
+  }
+  document.getElementById('equipes-list').innerHTML = equipes.map(e => {
+    const nom = e.nom_equipe || e.nom || '?';
+    const initials = nom.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const nb = Array.isArray(e.membres) ? e.membres.length : (e.membres || '?');
+    const info = isTech ? (e.domaine||'—') : (e.thematique||'—');
+    return `<div class="equipe-row">
+      <div class="equipe-avatar">${initials}</div>
+      <div style="flex:1;">
+        <div class="equipe-name">${nom}</div>
+        <div class="equipe-members">${nb} membre${nb>1?'s':''} · ${info}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ── Render sidebar ──────────────────────────────────────── */
+function renderSidebar() {
+  const days = H.date_fin_inscriptions ? daysUntil(H.date_fin_inscriptions) : null;
+  const cfg  = H.config || {};
+  document.getElementById('cta-card').innerHTML = `
+    <div class="cta-card__header">
+      <div class="cta-card__price">${H.nb_equipes_inscrites || 0}</div>
+      <div class="cta-card__price-label">équipe${(H.nb_equipes_inscrites||0)!==1?'s':''} inscrite${(H.nb_equipes_inscrites||0)!==1?'s':''}</div>
+    </div>
+    <div class="cta-card__body">
+      <div class="cta-detail-row"><span class="cta-detail-row__label">Statut</span><span>${statusBadge(H.statut)}</span></div>
+      <div class="cta-detail-row"><span class="cta-detail-row__label">Taille équipe</span><span class="cta-detail-row__val">1 à ${H.taille_equipe_max} pers.</span></div>
+      ${days!==null?`<div class="cta-detail-row"><span class="cta-detail-row__label">Inscriptions ferment</span><span class="cta-detail-row__val ${days<=5?'soon':''}">dans ${days}j</span></div>`:''}
+      <a href="./inscription.html?id=${H.id}" class="btn btn-primary btn-full" style="margin-top:var(--space-4);">S'inscrire à ce hackathon</a>
+      <a href="./mon-espace.html" class="btn btn-outline btn-full" style="margin-top:var(--space-2);">Déjà inscrit — Mon espace</a>
+    </div>`;
+
+  const prixHTML = cfg.prix?.length
+    ? `<div style="margin-top:var(--space-4);"><p style="font-size:0.8125rem;font-weight:500;color:var(--gray-700);margin-bottom:var(--space-3);">Prix à remporter</p>
+       ${cfg.prix.map(p=>`<div style="display:flex;justify-content:space-between;font-size:0.8125rem;padding:5px 0;border-bottom:1px solid var(--gray-100);">
+         <span style="color:var(--gray-500);">${p.rang}</span><span style="font-weight:500;color:var(--success-dark);">${p.montant}</span></div>`).join('')}</div>`
+    : '';
+  const compHTML = isTech && cfg.competences?.length
+    ? `<div style="margin-top:var(--space-4);"><p style="font-size:0.8125rem;font-weight:500;color:var(--gray-700);margin-bottom:var(--space-3);">Compétences utiles</p>
+       <div style="display:flex;flex-wrap:wrap;gap:6px;">${cfg.competences.map(c=>`<span class="tag" style="font-size:0.72rem;">${c}</span>`).join('')}</div></div>`
+    : '';
+  document.getElementById('sidebar-info').innerHTML = `
+    <p style="font-size:0.8125rem;font-weight:500;color:var(--gray-700);margin-bottom:var(--space-3);">Organisation</p>
+    <p style="font-size:0.8125rem;color:var(--gray-500);line-height:1.6;">${H.organisateur}</p>
+    ${compHTML}${prixHTML}
+    <div style="margin-top:var(--space-5);padding-top:var(--space-4);border-top:1px solid var(--gray-100);">
+      <a href="../index.html" style="font-size:0.8125rem;color:var(--blue-600);">← Tous les hackathons</a>
+    </div>`;
+}
+
+/* ── Tab navigation ──────────────────────────────────────── */
+const TABS = ['presentation','programme','regles','equipes'];
+function showTab(name, btn) {
+  TABS.forEach(t => document.getElementById('tab-'+t)?.classList.toggle('hidden', t!==name));
+  document.querySelectorAll('.detail-tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+}
+
+/* ── Init ────────────────────────────────────────────────── */
+async function init() {
+  const params = new URLSearchParams(window.location.search);
+  const hackId = parseInt(params.get('id')) || 1;
+  try {
+    const [hackData, inscriptions] = await Promise.all([
+      apiFetch(`/hackathons/${hackId}`),
+      apiFetch(`/inscriptions?hackathon_id=${hackId}`).catch(() => []),
+    ]);
+    H           = hackData;
+    H.equipes   = inscriptions;
+    isTech      = H.type === 'tech';
+    accentColor = isTech ? 'var(--blue-600)' : 'var(--success-dark)';
+    renderHero();
+    renderPresentation();
+    renderProgramme();
+    renderRegles();
+    renderEquipes();
+    renderSidebar();
+  } catch(err) {
+    toast('Erreur de chargement : ' + err.message, 'error');
+    document.getElementById('breadcrumb-title').textContent = 'Hackathon introuvable';
+  }
+}
+
+init();
+</script>
+</body>
+</html>

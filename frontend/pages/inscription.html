@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Inscription — HackENSAE</title>
+  <link rel="stylesheet" href="../css/design-system.css"/>
+  <style>
+    .page-wrapper {
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      margin-block: var(--space-8);
+    }
+    .livrable-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-3);
+      margin-bottom: var(--space-4);
+    }
+    .livrable-card {
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      text-align: center;
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+    .livrable-card:hover { border-color: var(--blue-300); background: var(--blue-25); }
+    .livrable-card.selected { border-color: var(--blue-500); background: var(--blue-50); }
+    .livrable-card__icon {
+      width: 36px; height: 36px;
+      border-radius: var(--radius-md);
+      background: var(--gray-100);
+      margin: 0 auto var(--space-2);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .livrable-card.selected .livrable-card__icon { background: var(--blue-100); }
+    .livrable-card__title { font-size: 0.8125rem; font-weight: 500; color: var(--gray-700); }
+    .livrable-card.selected .livrable-card__title { color: var(--blue-800); }
+    .livrable-card__desc  { font-size: 0.72rem; color: var(--gray-500); margin-top: 2px; line-height: 1.4; }
+
+    .thematique-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-2);
+      margin-bottom: var(--space-4);
+    }
+    .thematique-pill {
+      padding: var(--space-3) var(--space-3);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-md);
+      font-size: 0.8125rem;
+      cursor: pointer;
+      transition: all var(--transition);
+      color: var(--gray-700);
+    }
+    .thematique-pill:hover  { border-color: var(--blue-300); background: var(--blue-25); }
+    .thematique-pill.selected { border-color: var(--blue-500); background: var(--blue-50); color: var(--blue-800); font-weight: 500; }
+
+    .domaine-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-2);
+      margin-bottom: var(--space-4);
+    }
+    .domaine-pill {
+      padding: var(--space-2) var(--space-3);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-sm);
+      font-size: 0.8125rem;
+      cursor: pointer;
+      text-align: center;
+      transition: all var(--transition);
+      color: var(--gray-700);
+    }
+    .domaine-pill:hover  { border-color: var(--blue-300); background: var(--blue-25); }
+    .domaine-pill.selected { border-color: var(--blue-500); background: var(--blue-50); color: var(--blue-800); font-weight: 500; }
+
+    .sidebar-info-card {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      margin-bottom: var(--space-4);
+    }
+    .sidebar-info-card h4 {
+      font-size: 0.875rem;
+      margin-bottom: var(--space-3);
+      color: var(--blue-900);
+    }
+    .rule-item {
+      display: flex;
+      gap: var(--space-2);
+      margin-bottom: var(--space-2);
+      align-items: flex-start;
+    }
+    .rule-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--blue-400);
+      margin-top: 6px;
+      flex-shrink: 0;
+    }
+    .rule-item p { font-size: 0.8125rem; color: var(--gray-600, #4B5563); line-height: 1.5; }
+
+    .deadline-list { display: flex; flex-direction: column; }
+    .deadline-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 7px 0;
+      border-bottom: 1px solid var(--gray-100);
+      font-size: 0.8125rem;
+    }
+    .deadline-row:last-child { border-bottom: none; }
+    .deadline-row__label { color: var(--gray-500); }
+    .deadline-row__date  { font-weight: 500; color: var(--gray-900); }
+    .deadline-row__date.soon { color: var(--warning-mid); }
+
+    .success-state {
+      padding: var(--space-12) var(--space-8);
+      text-align: center;
+    }
+    .success-icon {
+      width: 60px; height: 60px;
+      background: var(--success-light);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto var(--space-5);
+    }
+    .success-state h2 { color: var(--blue-900); margin-bottom: var(--space-3); }
+    .next-steps {
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-md);
+      padding: var(--space-5);
+      text-align: left;
+      margin: var(--space-5) auto;
+      max-width: 480px;
+    }
+    .next-steps h4 { font-size: 0.875rem; margin-bottom: var(--space-3); }
+    .next-step-item { font-size: 0.8125rem; color: var(--gray-600, #4B5563); line-height: 2; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <nav class="navbar">
+      <div class="container navbar__inner">
+        <a href="../index.html" class="navbar__logo">
+          <div class="navbar__logo-mark">
+            <svg viewBox="0 0 18 18" fill="none">
+              <path d="M3 14L9 4L15 14" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M5.5 10H12.5" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span class="navbar__logo-text">HackENSAE</span>
+        </a>
+        <div class="navbar__links">
+          <a href="../index.html" class="navbar__link">Hackathons</a>
+          <a href="#" class="navbar__link">Mon espace</a>
+          <a href="#" class="navbar__link">Résultats</a>
+        </div>
+        <div class="navbar__actions">
+          <a href="#" class="btn btn-ghost btn-sm">Se connecter</a>
+          <a href="#" class="btn btn-nav btn-sm">S'inscrire</a>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <div class="container" style="padding-top: var(--space-6); padding-bottom: var(--space-12);">
+      <div class="page-wrapper" id="main-page">
+
+        <!-- Hero banner (injecté dynamiquement) -->
+        <div id="hero-area"></div>
+
+        <!-- Steps bar -->
+        <div class="steps-bar" id="steps-bar"></div>
+
+        <!-- Form + Sidebar -->
+        <div style="padding: var(--space-6);">
+          <div class="sidebar-layout">
+            <div id="form-area"></div>
+            <aside id="sidebar-area"></aside>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Success screen (hidden) -->
+      <div class="success-state hidden" id="success-area"></div>
+    </div>
+  </main>
+
+  <script src="../js/utils.js"></script>
+  <script>
+  /* ────────────────────────────────────────────────────────
+     CONFIG : tirée de l'URL (?id=1 ou ?id=2)
+  ──────────────────────────────────────────────────────── */
+  const urlParams  = new URLSearchParams(window.location.search);
+  const hackId     = parseInt(urlParams.get('id')) || 1;
+
+  const HACKATHONS = {
+    1: {
+      id: 1,
+      type: 'tech',
+      titre: 'Tech & Data Innovation 2025',
+      organisateur: 'Club Informatique ENSAE · Bureau des Statistiques AES',
+      statut: 'inscriptions',
+      taille_max: 4,
+      phase_label: 'Inscriptions',
+      deadline_inscriptions: '10 avr. 2025',
+      deadline_soumission:   '10 mai 2025',
+      deadline_formation:    '15 avr. 2025',
+      deadline_jury:         '15 mai 2025',
+      domaines: ['Agriculture', 'Santé', 'Education', 'Finance', 'Environnement', 'Entreprise'],
+      livrables: ['Application web', 'Application mobile', 'Dashboard interactif', 'Modèle prédictif + API', 'Outil d\'analyse', 'Autre prototype'],
+      competences: ['Python', 'R', 'SQL', 'Web dev', 'IA / ML', 'Data viz'],
+      regles: [
+        '1 à 4 membres par équipe, étudiants ENSAE',
+        'Le livrable doit être un prototype fonctionnel',
+        'Code source soumis via un repository public',
+        'Démonstration live (pitch) obligatoire',
+        'Poster scientifique requis avec le projet'
+      ],
+      heroBg: 'var(--blue-900)',
+      headerBadge: 'Inscriptions ouvertes'
+    },
+    2: {
+      id: 2,
+      type: 'datajournalisme',
+      titre: 'Datajournalisme 2026',
+      organisateur: 'Club Presse ENSAE',
+      statut: 'a_venir',
+      taille_max: 3,
+      phase_label: 'Communication',
+      deadline_inscriptions: 'Début mois stat.',
+      deadline_soumission:   'Fin mois stat.',
+      deadline_jury:         'Après clôture',
+      thematiques: ['Le climat', 'L\'éducation', 'Conséquences d\'une guerre', 'La santé', 'Conditions de vie des enfants', 'L\'économie générale', 'La finance'],
+      prix: [{ rang: '1er prix', montant: '50 000 FCFA' }, { rang: '2e prix', montant: '35 000 FCFA' }],
+      jury: ['M. Mamadou Diop', 'M. Jean Pierre Adiouma Ndiaye', 'Mme Iphygénie Sarr'],
+      regles: [
+        '1 à 3 membres par équipe, étudiants ENSAE',
+        'Une thématique imposée parmi les 7 sujets',
+        'Livrable : article web, vidéo ou reportage vocal',
+        'Rapport PDF de démarche d\'analyse obligatoire',
+        'Le lien soumis doit rester public pendant l\'évaluation'
+      ],
+      heroBg: '#085041',
+      headerBadge: 'Lancement imminent'
+    }
+  };
+
+  const H = HACKATHONS[hackId] || HACKATHONS[1];
+  const isTech = H.type === 'tech';
+
+  /* ── Render hero ───────────────────────────────────────── */
+  document.getElementById('hero-area').innerHTML = `
+    <div style="background:${H.heroBg};padding:var(--space-8) var(--space-8) var(--space-6);position:relative;overflow:hidden;">
+      <div style="position:absolute;right:-60px;top:-60px;width:260px;height:260px;border-radius:50%;background:rgba(255,255,255,0.04);"></div>
+      <div style="position:relative;z-index:1;">
+        <span class="badge ${isTech ? 'badge-blue' : 'badge-green'}" style="margin-bottom:var(--space-3);display:inline-flex;">${H.headerBadge}</span>
+        <h1 style="color:var(--white);font-size:1.5rem;margin-bottom:4px;">${H.titre}</h1>
+        <p style="color:${isTech ? 'var(--blue-200)' : 'rgba(159,225,203,0.9)'};font-size:0.875rem;">${H.organisateur}</p>
+        <div class="hero-banner__meta" style="margin-top:var(--space-5);">
+          <div class="hero-meta-item">
+            <span class="hero-meta-item__label">Équipe</span>
+            <span class="hero-meta-item__value">1 à ${H.taille_max} membres</span>
+          </div>
+          <div class="hero-meta-item">
+            <span class="hero-meta-item__label">Livrable</span>
+            <span class="hero-meta-item__value">${isTech ? 'Prototype + repo' : 'Article / vidéo / vocal'}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  /* ── Render steps ──────────────────────────────────────── */
+  const STEPS = ['Informations équipe', 'Membres', isTech ? 'Projet & domaine' : 'Thématique & livrable', 'Confirmation'];
+  let currentStep = 1;
+
+  function renderSteps() {
+    document.getElementById('steps-bar').innerHTML = STEPS.map((s, i) => {
+      const n = i + 1;
+      const cls = n < currentStep ? 'done' : n === currentStep ? 'active' : '';
+      const num = n < currentStep
+        ? `<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1.5 5l2.5 2.5 4.5-4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+        : n;
+      return `<div class="step-item ${cls}"><div class="step-num">${num}</div>${s}</div>`;
+    }).join('');
+  }
+
+  /* ── Form state ────────────────────────────────────────── */
+  const state = {
+    equipe: '', email_contact: '', nb_membres: isTech ? 4 : 3,
+    membres: [],
+    domaine: isTech ? H.domaines[0] : null,
+    thematique: !isTech ? H.thematiques[0] : null,
+    livrable_type: !isTech ? 'article' : null,
+    livrable_format: isTech ? H.livrables[0] : null,
+    description: '',
+    livrable_lien: '',
+  };
+
+  /* ── Render form step 1 ────────────────────────────────── */
+  function renderStep1() {
+    const maxOpts = Array.from({length: H.taille_max}, (_, i) => i + 1).map(n =>
+      `<option value="${n}" ${n === state.nb_membres ? 'selected' : ''}>${n === 1 ? '1 — Solo' : n + ' membres'}</option>`
+    ).join('');
+
+    document.getElementById('form-area').innerHTML = `
+      ${!isTech ? `
+      <div class="alert alert-info mb-4" style="margin-bottom:var(--space-4);">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="flex-shrink:0;margin-top:1px;">
+          <circle cx="8" cy="8" r="6.5"/><line x1="8" y1="5.5" x2="8" y2="8.5"/><circle cx="8" cy="10.5" r="0.5" fill="currentColor" stroke="none"/>
+        </svg>
+        <span>Ce concours attend une <strong>production journalistique</strong> (article, vidéo ou vocal + rapport) — pas un prototype technique.</span>
+      </div>` : ''}
+
+      <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:var(--space-6);margin-bottom:var(--space-4);">
+        <h3 style="margin-bottom:var(--space-5);color:var(--blue-900);">Informations de l'équipe</h3>
+        <div class="form-grid-2" style="margin-bottom:var(--space-4);">
+          <div class="form-group">
+            <label class="form-label">Nom de l'équipe <span class="required">*</span></label>
+            <input class="form-control" type="text" id="f-equipe" placeholder="Ex : DataMinds" value="${state.equipe}" required/>
+            <span class="form-error"></span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nombre de membres <span class="required">*</span></label>
+            <select class="form-control" id="f-nb-membres" onchange="state.nb_membres=+this.value;renderStep2()">${maxOpts}</select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email de contact <span class="required">*</span></label>
+          <input class="form-control" type="email" id="f-email" placeholder="chef.equipe@ensae.sn" value="${state.email}" required/>
+          <span class="form-error"></span>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;gap:var(--space-3);margin-top:var(--space-4);">
+        <a href="../index.html" class="btn btn-outline">Retour</a>
+        <button class="btn btn-primary" onclick="goStep(2)">Suivant — Membres</button>
+      </div>
+    `;
+  }
+
+  /* ── Render form step 2 (membres) ──────────────────────── */
+  function renderStep2() {
+    const membresHTML = Array.from({length: state.nb_membres}, (_, i) => {
+      const m = state.membres[i] || {};
+      const req = i === 0;
+      const filieres = isTech
+        ? ['ISEP','AS','ISE','Autre']
+        : ['ISEP','AS','ISE','Autre'];
+      return `
+        <div class="member-block">
+          <div class="member-block__header">
+            <span class="member-block__title">Membre ${i + 1}</span>
+            <span class="badge ${req ? 'badge-blue' : 'badge-gray'}">${req ? 'Chef d\'équipe' : 'Facultatif'}</span>
+          </div>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Prénom et nom${req ? ' <span class="required">*</span>' : ''}</label>
+              <input class="form-control" type="text" id="m-nom-${i}" placeholder="Prénom Nom" value="${m.nom || ''}" ${req ? 'required' : ''}/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Filière</label>
+              <select class="form-control" id="m-filiere-${i}">
+                <option value="">— Choisir —</option>
+                ${filieres.map(f => `<option ${m.filiere === f ? 'selected' : ''}>${f}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+
+    document.getElementById('form-area').innerHTML = `
+      <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:var(--space-6);">
+        <h3 style="margin-bottom:var(--space-5);color:var(--blue-900);">Membres de l'équipe</h3>
+        ${membresHTML}
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:var(--space-4);">
+        <button class="btn btn-outline" onclick="goStep(1)">Retour</button>
+        <button class="btn btn-primary" onclick="goStep(3)">Suivant — ${isTech ? 'Projet' : 'Thématique'}</button>
+      </div>
+    `;
+  }
+
+  /* ── Render form step 3 ─────────────────────────────────── */
+  function renderStep3() {
+    if (isTech) renderStep3Tech(); else renderStep3Dataj();
+  }
+
+  function renderStep3Tech() {
+    document.getElementById('form-area').innerHTML = `
+      <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:var(--space-6);margin-bottom:var(--space-4);">
+        <h3 style="margin-bottom:var(--space-5);color:var(--blue-900);">Domaine d'intervention</h3>
+        <div class="domaine-grid">
+          ${H.domaines.map(d => `<div class="domaine-pill ${state.domaine === d ? 'selected' : ''}" onclick="selectDomaine(this,'${d}')">${d}</div>`).join('')}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Idée de solution (optionnel)</label>
+          <textarea class="form-control" id="f-desc" placeholder="Décrivez brièvement votre approche...">${state.description}</textarea>
+          <span class="form-hint">Cette description n'est pas évaluée à l'inscription.</span>
+        </div>
+      </div>
+      <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:var(--space-6);">
+        <h3 style="margin-bottom:var(--space-5);color:var(--blue-900);">Type de livrable prévu</h3>
+        <div class="form-group">
+          <label class="form-label">Format principal <span class="required">*</span></label>
+          <select class="form-control" id="f-livrable-format">
+            ${H.livrables.map(l => `<option ${state.livrable_format === l ? 'selected' : ''}>${l}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:var(--space-4);">
+        <button class="btn btn-outline" onclick="goStep(2)">Retour</button>
+        <button class="btn btn-primary" onclick="goStep(4)">Finaliser l'inscription</button>
+      </div>
+    `;
+  }
+
+  const LIVRABLE_TYPES = [
+    { id: 'article', label: 'Article web',      desc: 'Lien vers une page publiée' },
+    { id: 'video',   label: 'Reportage vidéo',  desc: 'YouTube, Vimeo, Drive...' },
+    { id: 'vocal',   label: 'Reportage vocal',  desc: 'SoundCloud, Drive...' }
+  ];
+
+  function renderStep3Dataj() {
+    document.getElementById('form-area').innerHTML = `
+      <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:var(--space-6);margin-bottom:var(--space-4);">
+        <h3 style="margin-bottom:var(--space-5);color:var(--blue-900);">Thématique choisie</h3>
+        <div class="thematique-grid">
+          ${H.thematiques.map(t => `<div class="thematique-pill ${state.thematique === t ? 'selected' : ''}" onclick="selectThematique(this,'${t}')">${t}</div>`).join('')}
+        </div>
+        <p class="form-hint">Une seule thématique par équipe. Les thématiques sont imposées par l'organisation.</p>
+      </div>
+      <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:var(--space-6);">
+        <h3 style="margin-bottom:var(--space-5);color:var(--blue-900);">Type de livrable</h3>
+        <div class="livrable-grid" style="margin-bottom:var(--space-4);">
+          ${LIVRABLE_TYPES.map(l => `
+            <div class="livrable-card ${state.livrable_type === l.id ? 'selected' : ''}" onclick="selectLivrable(this,'${l.id}')">
+              <div class="livrable-card__icon">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                  ${l.id === 'article' ? '<rect x="2" y="2" width="12" height="12" rx="2"/><line x1="5" y1="6" x2="11" y2="6"/><line x1="5" y1="9" x2="9" y2="9"/>' : ''}
+                  ${l.id === 'video'   ? '<circle cx="8" cy="8" r="6"/><polygon points="6,5.5 11,8 6,10.5" fill="currentColor" stroke="none"/>' : ''}
+                  ${l.id === 'vocal'   ? '<path d="M8 2v8M5 5H3a1 1 0 00-1 1v2a1 1 0 001 1h2l3 2V3L5 5z"/><path d="M11 5.5a3 3 0 010 5"/>' : ''}
+                </svg>
+              </div>
+              <div class="livrable-card__title">${l.label}</div>
+              <div class="livrable-card__desc">${l.desc}</div>
+            </div>`).join('')}
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:var(--space-4);">
+        <button class="btn btn-outline" onclick="goStep(2)">Retour</button>
+        <button class="btn btn-primary" onclick="goStep(4)">Finaliser l'inscription</button>
+      </div>
+    `;
+  }
+
+  /* ── Render success ────────────────────────────────────── */
+  function renderSuccess() {
+    document.getElementById('main-page').classList.add('hidden');
+    const area = document.getElementById('success-area');
+    area.classList.remove('hidden');
+    area.innerHTML = `
+      <div class="success-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--success-dark)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 6L9 17l-5-5"/>
+        </svg>
+      </div>
+      <h2>Inscription enregistrée</h2>
+      <p class="text-muted" style="max-width:480px;margin:0 auto;">
+        L'équipe <strong>${state.equipe || 'votre équipe'}</strong> est inscrite au hackathon <strong>${H.titre}</strong>.
+        Un email de confirmation a été envoyé à ${state.email || 'l\'adresse renseignée'}.
+      </p>
+      <div class="next-steps">
+        <h4>Prochaines étapes</h4>
+        ${isTech ? `
+        <div class="next-step-item">1. La liste des équipes sera publiée dans le groupe</div>
+        <div class="next-step-item">2. Session de formation le ${H.deadline_formation}</div>
+        <div class="next-step-item">3. 3 semaines de développement à partir du 16 avril</div>
+        <div class="next-step-item">4. Soumission du repo avant le ${H.deadline_soumission}</div>
+        ` : `
+        <div class="next-step-item">1. La liste des équipes sera publiée dans le groupe WhatsApp</div>
+        <div class="next-step-item">2. Vous disposez d'un mois pour produire votre livrable</div>
+        <div class="next-step-item">3. Soumettez le lien + rapport avant la clôture</div>
+        <div class="next-step-item">4. Le jury évaluera les productions après la deadline</div>
+        `}
+      </div>
+      <a href="./mon-espace.html" class="btn btn-primary btn-lg">Accéder à mon espace participant</a>
+    `;
+  }
+
+  /* ── Navigation entre étapes ───────────────────────────── */
+  function goStep(n) {
+    if (n === 2) {
+      state.equipe        = document.getElementById('f-equipe')?.value.trim();
+      state.email_contact = document.getElementById('f-email')?.value.trim();
+      if (!state.equipe || !state.email_contact) { toast('Veuillez remplir les champs obligatoires.', 'error'); return; }
+    }
+    if (n === 3) {
+      state.membres = Array.from({length: state.nb_membres}, (_, i) => ({
+        nom:    document.getElementById(`m-nom-${i}`)?.value.trim() || '',
+        filiere: document.getElementById(`m-filiere-${i}`)?.value || ''
+      }));
+      if (!state.membres[0].nom) { toast('Le nom du chef d\'équipe est obligatoire.', 'error'); return; }
+    }
+    if (n === 4) {
+      if (isTech) {
+        state.description    = document.getElementById('f-desc')?.value || '';
+        state.livrable_format = document.getElementById('f-livrable-format')?.value || '';
+      } else {
+        state.livrable_lien = document.getElementById('f-lien')?.value.trim() || '';
+        if (!state.thematique) { toast('Veuillez choisir une thématique.', 'error'); return; }
+      }
+      submitInscription();
+      return;
+    }
+    currentStep = n;
+    renderSteps();
+    const renderers = { 1: renderStep1, 2: renderStep2, 3: renderStep3 };
+    renderers[n]?.();
+    renderSidebar();
+  }
+
+  /* ── Sidebar ─────────────────────────────────────────────*/
+  function renderSidebar() {
+    const reglesHTML = H.regles.map(r => `
+      <div class="rule-item"><div class="rule-dot"></div><p>${r}</p></div>
+    `).join('');
+
+    const prixHTML = !isTech ? `
+      <div class="sidebar-info-card">
+        <h4>Prix à remporter</h4>
+        ${H.prix.map(p => `
+          <div class="deadline-row">
+            <span class="deadline-row__label">${p.rang}</span>
+            <span style="font-size:0.875rem;font-weight:500;color:var(--success-dark);">${p.montant}</span>
+          </div>`).join('')}
+        <div class="deadline-row">
+          <span class="deadline-row__label">Tous les lauréats</span>
+          <span class="deadline-row__date" style="font-size:0.75rem;font-weight:400;color:var(--gray-500);">Attestation + carnets + stylos</span>
+        </div>
+      </div>` : '';
+
+    const juryHTML = !isTech ? `
+      <div class="sidebar-info-card">
+        <h4>Jury</h4>
+        <div style="font-size:0.8125rem;color:var(--gray-500);line-height:2;">
+          ${H.jury.join('<br>')}
+        </div>
+      </div>` : '';
+
+    const compHTML = isTech ? `
+      <div class="sidebar-info-card">
+        <h4>Compétences valorisées</h4>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          ${H.competences.map(c => `<span class="tag">${c}</span>`).join('')}
+        </div>
+      </div>` : '';
+
+    document.getElementById('sidebar-area').innerHTML = `
+      <div class="sidebar-info-card">
+        <h4>Règles de participation</h4>
+        ${reglesHTML}
+      </div>
+      <div class="sidebar-info-card">
+        <h4>Calendrier</h4>
+        <div class="deadline-list">
+          <div class="deadline-row">
+            <span class="deadline-row__label">Clôture inscriptions</span>
+            <span class="deadline-row__date soon">${H.deadline_inscriptions}</span>
+          </div>
+          ${H.deadline_formation ? `<div class="deadline-row">
+            <span class="deadline-row__label">Session de formation</span>
+            <span class="deadline-row__date">${H.deadline_formation}</span>
+          </div>` : ''}
+          <div class="deadline-row">
+            <span class="deadline-row__label">Soumission</span>
+            <span class="deadline-row__date">${H.deadline_soumission}</span>
+          </div>
+          <div class="deadline-row">
+            <span class="deadline-row__label">Évaluation jury</span>
+            <span class="deadline-row__date">${H.deadline_jury}</span>
+          </div>
+        </div>
+      </div>
+      ${compHTML}${prixHTML}${juryHTML}
+    `;
+  }
+
+  /* ── Interactivité ───────────────────────────────────────*/
+  function selectDomaine(el, val) {
+    document.querySelectorAll('.domaine-pill').forEach(p => p.classList.remove('selected'));
+    el.classList.add('selected');
+    state.domaine = val;
+  }
+  function selectThematique(el, val) {
+    document.querySelectorAll('.thematique-pill').forEach(p => p.classList.remove('selected'));
+    el.classList.add('selected');
+    state.thematique = val;
+  }
+  function selectLivrable(el, val) {
+    document.querySelectorAll('.livrable-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    state.livrable_type = val;
+    const hints = {
+      article: ['Lien de l\'article web', 'URL publique de la page en ligne.'],
+      video:   ['Lien de la vidéo',       'YouTube, Vimeo, Google Drive ou autre.'],
+      vocal:   ['Lien du reportage vocal','SoundCloud, Google Drive ou autre.']
+    };
+    const [label, hint] = hints[val];
+    const ll = document.getElementById('lien-label');
+    const lh = document.getElementById('lien-hint');
+    if (ll) ll.innerHTML = label + ' <span class="required">*</span>';
+    if (lh) lh.textContent = hint;
+  }
+
+  /* ── Soumission ──────────────────────────────────────────*/
+  async function submitInscription() {
+    const payload = {
+      hackathon_id: H.id,
+      nom_equipe:   state.equipe,
+      email_contact:   state.email_contact,
+      membres:      state.membres,
+      domaine:      state.domaine,
+      thematique:   state.thematique,
+      livrable_type: state.livrable_type,
+    };
+      console.log('Payload envoyé :', JSON.stringify(payload, null, 2));
+    try {
+      await apiFetch('/inscriptions', { method:'POST', body: JSON.stringify(payload) });
+      await new Promise(r => setTimeout(r, 800));
+      renderSuccess();
+    } catch (err) {
+      toast(err.message || 'Erreur lors de l\'inscription.', 'error');
+    }
+  }
+
+  /* ── Init ────────────────────────────────────────────────*/
+  document.title = `Inscription — ${H.titre} · HackENSAE`;
+  renderSteps();
+  renderStep1();
+  renderSidebar();
+  </script>
+</body>
+</html>

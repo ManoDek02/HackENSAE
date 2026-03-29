@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Résultats — HackENSAE</title>
+  <link rel="stylesheet" href="../css/design-system.css"/>
+  <style>
+    /* ── Hero ─────────────────────────────────────────────── */
+    .results-hero {
+      background: var(--blue-900);
+      padding: var(--space-12) 0 var(--space-10);
+      position: relative; overflow: hidden;
+    }
+    .results-hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image: radial-gradient(circle at 70% 30%, var(--blue-800) 0%, transparent 55%);
+    }
+    .results-hero__inner { position: relative; z-index: 1; text-align: center; }
+    .results-hero h1 { color: var(--white); margin-bottom: var(--space-3); }
+    .results-hero p  { color: var(--blue-200); font-size: 1rem; max-width: 520px; margin: 0 auto; }
+
+    /* ── Podium ───────────────────────────────────────────── */
+    .podium {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: var(--space-3);
+      padding: var(--space-10) 0 var(--space-6);
+    }
+    .podium-item {
+      display: flex; flex-direction: column; align-items: center;
+      width: 180px;
+    }
+    .podium-card {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5) var(--space-4);
+      text-align: center;
+      width: 100%;
+      margin-bottom: var(--space-3);
+      transition: transform var(--transition-slow);
+    }
+    .podium-card:hover { transform: translateY(-4px); }
+    .podium-card--1st  { border-color: #FDE68A; background: #FFFBEB; }
+    .podium-card--2nd  { border-color: var(--blue-100); background: var(--blue-25); }
+    .podium-card--3rd  { border-color: var(--gray-200); background: var(--gray-50); }
+    .podium-medal {
+      width: 44px; height: 44px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; font-weight: 500;
+      margin: 0 auto var(--space-3);
+    }
+    .podium-medal--1st { background: #FDE68A; color: #92400E; }
+    .podium-medal--2nd { background: var(--blue-100); color: var(--blue-800); }
+    .podium-medal--3rd { background: var(--gray-200); color: var(--gray-600, #4B5563); }
+    .podium-team  { font-size: 0.9rem; font-weight: 500; color: var(--gray-900); margin-bottom: 3px; }
+    .podium-score { font-size: 1.5rem; font-weight: 500; color: var(--blue-900); line-height: 1; }
+    .podium-score-label { font-size: 0.72rem; color: var(--gray-400); }
+    .podium-hack  { font-size: 0.75rem; color: var(--gray-500); margin-top: var(--space-2); }
+    .podium-bar {
+      border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+      width: 100%;
+    }
+
+    /* ── Selector hackathon ───────────────────────────────── */
+    .hack-selector {
+      display: flex; gap: var(--space-3); justify-content: center;
+      margin-bottom: var(--space-8);
+    }
+    .hack-sel-btn {
+      padding: 9px 22px;
+      border-radius: var(--radius-full);
+      font-size: 0.875rem; font-weight: 500;
+      border: 1px solid var(--gray-200);
+      background: var(--white);
+      color: var(--gray-600, #4B5563);
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+    .hack-sel-btn:hover  { border-color: var(--blue-300); color: var(--blue-700); }
+    .hack-sel-btn.active { background: var(--blue-900); color: var(--white); border-color: var(--blue-900); }
+
+    /* ── Classement table ─────────────────────────────────── */
+    .rank-table { border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--gray-200); }
+    .rank-row {
+      display: grid;
+      grid-template-columns: 52px 1fr 120px 90px 100px;
+      align-items: center;
+      padding: var(--space-4) var(--space-5);
+      border-bottom: 1px solid var(--gray-100);
+      transition: background var(--transition);
+    }
+    .rank-row:last-child { border-bottom: none; }
+    .rank-row:hover { background: var(--gray-50); }
+    .rank-row.header {
+      background: var(--blue-25);
+      border-bottom: 1px solid var(--blue-100);
+      font-size: 0.75rem; font-weight: 500;
+      color: var(--blue-800); text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .rank-row.gold   { background: #FFFBEB; }
+    .rank-row.silver { background: var(--blue-25); }
+    .rank-badge {
+      width: 30px; height: 30px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.8125rem; font-weight: 500;
+    }
+    .rank-badge.gold   { background: #FDE68A; color: #92400E; }
+    .rank-badge.silver { background: var(--blue-100); color: var(--blue-800); }
+    .rank-badge.other  { background: var(--gray-100); color: var(--gray-600, #4B5563); font-size:0.75rem; }
+    .rank-team { font-size: 0.875rem; font-weight: 500; color: var(--gray-900); }
+    .rank-members { font-size: 0.75rem; color: var(--gray-500); margin-top: 1px; }
+    .rank-domain { display: flex; }
+    .rank-note { font-size: 1rem; font-weight: 500; color: var(--blue-900); }
+    .rank-note-sub { font-size: 0.72rem; color: var(--gray-400); }
+    .note-bar-wrap { height: 6px; background: var(--gray-100); border-radius: var(--radius-full); overflow: hidden; margin-top: 4px; }
+    .note-bar-fill { height: 100%; border-radius: var(--radius-full); background: var(--blue-400); }
+
+    /* ── Pending state ────────────────────────────────────── */
+    .pending-state {
+      text-align: center;
+      padding: var(--space-16) var(--space-6);
+    }
+    .pending-icon {
+      width: 60px; height: 60px;
+      border-radius: 50%;
+      background: var(--blue-25);
+      border: 1px solid var(--blue-100);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto var(--space-5);
+    }
+    .pending-state h3 { color: var(--blue-900); margin-bottom: var(--space-2); }
+    .pending-state p  { color: var(--gray-500); font-size: 0.9rem; max-width: 400px; margin: 0 auto; }
+
+    @media (max-width: 680px) {
+      .podium { flex-direction: column; align-items: center; }
+      .podium-item { width: 240px; }
+      .rank-row { grid-template-columns: 40px 1fr 80px; }
+      .rank-row > *:nth-child(4),
+      .rank-row > *:nth-child(5) { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <nav class="navbar">
+    <div class="container navbar__inner">
+      <a href="../index.html" class="navbar__logo">
+        <div class="navbar__logo-mark">
+          <svg viewBox="0 0 18 18" fill="none">
+            <path d="M3 14L9 4L15 14" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M5.5 10H12.5" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <span class="navbar__logo-text">HackENSAE</span>
+      </a>
+      <div class="navbar__links">
+        <a href="../index.html" class="navbar__link">Hackathons</a>
+        <a href="./mon-espace.html" class="navbar__link">Mon espace</a>
+        <a href="./resultats.html" class="navbar__link active">Résultats</a>
+      </div>
+      <div class="navbar__actions">
+        <a href="./login.html" class="btn btn-ghost btn-sm">Se connecter</a>
+        <a href="./login.html" class="btn btn-nav btn-sm">S'inscrire</a>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<!-- Hero -->
+<section class="results-hero">
+  <div class="container results-hero__inner">
+    <p class="section-eyebrow" style="color:var(--blue-300);">Palmarès</p>
+    <h1 class="display-lg" style="color:var(--white);margin-bottom:var(--space-3);">Résultats des hackathons</h1>
+    <p>Classements officiels établis par les jurys. Félicitations à toutes les équipes participantes.</p>
+  </div>
+</section>
+
+<main>
+  <div class="container" style="padding-block:var(--space-10);">
+
+    <!-- Sélecteur hackathon -->
+    <div class="hack-selector">
+      <button class="hack-sel-btn active" data-hack="1" onclick="selectHack(1,this)">Tech & Data Innovation 2025</button>
+      <button class="hack-sel-btn" data-hack="2" onclick="selectHack(2,this)">Datajournalisme 2026</button>
+    </div>
+
+    <!-- Podium -->
+    <div id="podium-area"></div>
+
+    <!-- Classement complet -->
+    <div style="max-width:860px;margin:0 auto;" id="classement-area"></div>
+
+  </div>
+</main>
+
+<script src="../js/utils.js"></script>
+<script src="../js/utils.js"></script>
+<script>
+/* ── Cache résultats ─────────────────────────────────────── */
+const RESULTATS_CACHE = {};
+let currentHack = null;
+let hackathonsList = [];
+
+/* ── Podium ──────────────────────────────────────────────── */
+function renderPodium(data) {
+  const area = document.getElementById('podium-area');
+  if (data.statut !== 'termine' || !data.equipes?.length) { area.innerHTML = ''; return; }
+  const top3      = data.equipes.slice(0, 3);
+  const order     = [top3[1], top3[0], top3[2]].filter(Boolean);
+  const heights   = [120, 160, 100];
+  const barColors = ['#B5D4F4','#FDE68A','#D3D1C7'];
+  area.innerHTML = `<div class="podium">
+    ${order.map((e,i) => {
+      const rank  = e.rang;
+      const cls   = rank===1?'1st':rank===2?'2nd':'3rd';
+      const medal = rank===1?'1er':rank===2?'2e':'3e';
+      return `<div class="podium-item">
+        <div class="podium-card podium-card--${cls}">
+          <div class="podium-medal podium-medal--${cls}">${medal}</div>
+          <div class="podium-team">${e.equipe}</div>
+          <div class="podium-score">${e.note}</div>
+          <div class="podium-score-label">/100</div>
+        </div>
+        <div class="podium-bar" style="height:${heights[i]}px;background:${barColors[i]};border-radius:var(--radius-sm) var(--radius-sm) 0 0;"></div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+/* ── Classement complet ──────────────────────────────────── */
+function renderClassement(data) {
+  const area = document.getElementById('classement-area');
+  if (data.statut !== 'termine') {
+    area.innerHTML = `
+      <div class="pending-state">
+        <div class="pending-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--blue-400)" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+        <h3>Évaluation en cours</h3>
+        <p>Le jury évalue les projets soumis. Les résultats seront publiés ici dès la fin de l'évaluation.</p>
+        <div style="margin-top:var(--space-6);">${statusBadge(data.statut)}</div>
+      </div>`;
+    return;
+  }
+  if (!data.equipes?.length) {
+    area.innerHTML = '<div class="pending-state"><p style="color:var(--gray-500);">Aucun résultat disponible.</p></div>';
+    return;
+  }
+  const isTechH = data.type === 'tech';
+  const criteres = isTechH
+    ? [['Architecture technique','25 pts'],['Originalité','20 pts'],['Impact potentiel','20 pts'],['Mise en production','20 pts'],['Utilisation des stats','15 pts']]
+    : [['Qualité journalistique','30 pts'],['Rigueur statistique','30 pts'],['Impact & pertinence','20 pts'],['Présentation','20 pts']];
+
+  area.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-5);">
+      <h2 style="color:var(--blue-900);">Classement complet</h2>
+      <span class="badge badge-green">Résultats officiels</span>
+    </div>
+    <div class="rank-table">
+      <div class="rank-row header">
+        <div>Rang</div><div>Équipe</div><div>${isTechH?'Domaine':'Thématique'}</div><div>Note</div><div>Lien projet</div>
+      </div>
+      ${data.equipes.map(e => {
+        const badgeCls = e.rang===1?'gold':e.rang===2?'silver':'other';
+        const rowCls   = e.rang===1?'gold':e.rang===2?'silver':'';
+        const lien     = e.lien || '';
+        return `
+          <div class="rank-row ${rowCls}">
+            <div><div class="rank-badge ${badgeCls}">${e.rang}</div></div>
+            <div><div class="rank-team">${e.equipe}</div></div>
+            <div class="rank-domain"><span class="tag" style="font-size:0.72rem;">${e.domaine||e.thematique||'—'}</span></div>
+            <div>
+              <div class="rank-note">${e.note}<span class="rank-note-sub">/100</span></div>
+              <div class="note-bar-wrap"><div class="note-bar-fill" style="width:${e.note}%;"></div></div>
+            </div>
+            <div>${lien?`<a href="${lien}" target="_blank" style="font-size:0.75rem;color:var(--blue-600);">Voir le projet</a>`:'—'}</div>
+          </div>
+          ${e.rang<=3&&e.commentaire?`
+          <div style="background:var(--gray-50);padding:var(--space-3) var(--space-5) var(--space-3) calc(52px + var(--space-5));font-size:0.8125rem;color:var(--gray-500);border-bottom:1px solid var(--gray-100);font-style:italic;">
+            "${e.commentaire}"
+          </div>`:''}`
+      }).join('')}
+    </div>
+    <div style="margin-top:var(--space-8);padding:var(--space-6);background:var(--blue-25);border:1px solid var(--blue-100);border-radius:var(--radius-lg);">
+      <h3 style="color:var(--blue-900);margin-bottom:var(--space-4);">Critères d'évaluation</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:var(--space-3);">
+        ${criteres.map(([label,pts])=>`<div style="background:var(--white);border:1px solid var(--blue-100);border-radius:var(--radius-md);padding:var(--space-3) var(--space-4);">
+          <div style="font-size:0.72rem;color:var(--gray-500);margin-bottom:3px;">${label}</div>
+          <div style="font-size:1rem;font-weight:500;color:var(--blue-900);">${pts}</div></div>`).join('')}
+      </div>
+    </div>`;
+}
+
+/* ── Sélection hackathon ─────────────────────────────────── */
+async function selectHack(id, btn) {
+  currentHack = id;
+  document.querySelectorAll('.hack-sel-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+
+  if (RESULTATS_CACHE[id]) {
+    renderPodium(RESULTATS_CACHE[id]);
+    renderClassement(RESULTATS_CACHE[id]);
+    return;
+  }
+  try {
+    const [hack, classement] = await Promise.all([
+      apiFetch(`/hackathons/${id}`),
+      apiFetch(`/organisateurs/classement/${id}`),
+    ]);
+    const data = { ...hack, equipes: classement };
+    RESULTATS_CACHE[id] = data;
+    renderPodium(data);
+    renderClassement(data);
+  } catch(err) {
+    toast('Erreur de chargement des résultats.', 'error');
+  }
+}
+
+/* ── Peuplement dynamique des boutons hackathons ─────────── */
+async function init() {
+  try {
+    hackathonsList = await apiFetch('/hackathons');
+    const selectorEl = document.querySelector('.hack-selector');
+    if (selectorEl && hackathonsList.length) {
+      selectorEl.innerHTML = hackathonsList.map((h, i) =>
+        `<button class="hack-sel-btn${i===0?' active':''}" onclick="selectHack(${h.id},this)">${h.titre}</button>`
+      ).join('');
+    }
+    if (hackathonsList.length) {
+      await selectHack(hackathonsList[0].id, document.querySelector('.hack-sel-btn'));
+    }
+  } catch(err) {
+    toast('Impossible de charger les hackathons.', 'error');
+  }
+}
+
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard organisateur — HackENSAE</title>
+  <link rel="stylesheet" href="../css/design-system.css"/>
+  <style>
+    .dash-layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:var(--space-6);padding-block:var(--space-8);align-items:start;}
+    @media(max-width:860px){.dash-layout{grid-template-columns:1fr;}.dash-sidenav{display:none;}}
+    .dash-sidenav{background:var(--blue-950);border-radius:var(--radius-lg);overflow:hidden;position:sticky;top:calc(var(--nav-height) + var(--space-4));}
+    .sn-header{padding:var(--space-5);border-bottom:1px solid var(--blue-800);}
+    .sn-label{font-size:0.7rem;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:var(--blue-400);margin-bottom:4px;}
+    .sn-name{font-size:0.875rem;font-weight:500;color:var(--white);line-height:1.3;}
+    .dl{display:flex;align-items:center;gap:var(--space-3);padding:10px var(--space-5);font-size:0.8125rem;color:var(--blue-300);cursor:pointer;transition:all var(--transition);border-left:3px solid transparent;}
+    .dl:hover{background:var(--blue-900);color:var(--blue-100);}
+    .dl.active{background:var(--blue-900);color:var(--white);border-left-color:var(--blue-400);font-weight:500;}
+    .dl svg{width:15px;height:15px;flex-shrink:0;}
+    .dl .cnt{margin-left:auto;background:var(--blue-800);color:var(--blue-200);font-size:0.7rem;padding:1px 7px;border-radius:var(--radius-full);}
+    .dl.active .cnt{background:var(--blue-600);color:var(--white);}
+    .metrics-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--space-4);margin-bottom:var(--space-6);}
+    @media(max-width:700px){.metrics-grid{grid-template-columns:repeat(2,1fr);}}
+    .phase-ctrl{background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:var(--space-5);}
+    .phase-ctrl__hdr{background:var(--blue-25);border-bottom:1px solid var(--blue-100);padding:var(--space-4) var(--space-5);display:flex;align-items:center;justify-content:space-between;}
+    .phase-ctrl__hdr h3{font-size:0.9rem;color:var(--blue-900);}
+    .psteps{display:flex;padding:var(--space-5);gap:0;overflow-x:auto;}
+    .pstep{display:flex;flex-direction:column;align-items:center;flex:1;min-width:80px;position:relative;cursor:pointer;}
+    .pstep::after{content:'';position:absolute;top:14px;left:50%;right:-50%;height:2px;background:var(--gray-200);z-index:0;}
+    .pstep:last-child::after{display:none;}
+    .pstep.done::after{background:var(--success-mid);opacity:0.4;}
+    .pdot{width:28px;height:28px;border-radius:50%;border:2px solid var(--gray-200);background:var(--white);display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:500;color:var(--gray-400);z-index:1;position:relative;transition:all var(--transition);}
+    .pstep.done .pdot{background:var(--success-mid);border-color:var(--success-mid);color:var(--white);}
+    .pstep.current .pdot{background:var(--blue-600);border-color:var(--blue-600);color:var(--white);}
+    .plabel{font-size:0.7rem;color:var(--gray-500);margin-top:var(--space-2);text-align:center;line-height:1.3;}
+    .pstep.current .plabel{color:var(--blue-700);font-weight:500;}
+    .action-btn{padding:4px 10px;border-radius:var(--radius-sm);font-size:0.75rem;font-weight:500;border:1px solid transparent;cursor:pointer;transition:all var(--transition);}
+    .abg{background:var(--success-light);color:var(--success-dark);border-color:#A7F3D0;}
+    .abg:hover{background:#A7F3D0;}
+    .abr{background:var(--danger-light);color:var(--danger-dark);border-color:#FECACA;margin-left:4px;}
+    .abr:hover{background:#FECACA;}
+    .note-input{width:60px;padding:4px 8px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-size:0.8125rem;text-align:center;}
+    .note-input:focus{outline:none;border-color:var(--blue-400);}
+    .filters-bar{display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap;margin-bottom:var(--space-4);}
+    .filter-btn{padding:7px 16px;border-radius:var(--radius-full);font-size:0.8125rem;border:1px solid var(--gray-200);background:var(--white);color:var(--gray-700);cursor:pointer;transition:all var(--transition);}
+    .filter-btn.active{border-color:var(--blue-600);color:var(--blue-700);background:var(--blue-50);font-weight:500;}
+    .sdot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;}
+    .sdot.g{background:var(--success-mid);}
+    .sdot.a{background:var(--warning-mid);}
+    .sdot.r{background:var(--danger-mid);}
+  </style>
+</head>
+<body>
+<header>
+  <nav class="navbar">
+    <div class="container navbar__inner">
+      <a href="../index.html" class="navbar__logo">
+        <div class="navbar__logo-mark">
+          <svg viewBox="0 0 18 18" fill="none"><path d="M3 14L9 4L15 14" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.5 10H12.5" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </div>
+        <span class="navbar__logo-text">HackENSAE</span>
+      </a>
+      <div class="navbar__links">
+        <a href="../index.html" class="navbar__link">Hackathons</a>
+        <a href="#" class="navbar__link active">Organisation</a>
+      </div>
+      <div class="navbar__actions">
+        <span style="font-size:0.8125rem;color:var(--blue-200);">Organisateur</span>
+        <div style="width:30px;height:30px;border-radius:50%;background:var(--blue-400);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:500;color:var(--white);">PB</div>
+      </div>
+    </div>
+  </nav>
+</header>
+<main>
+  <div class="container">
+    <div class="dash-layout">
+      <aside class="dash-sidenav">
+        <div class="sn-header">
+          <div class="sn-label">Hackathon actif</div>
+          <!-- Remplacer le <select id="hack-selector"> et son style par : -->
+          <div style="position:relative;">
+            <select id="hack-selector" onchange="switchHack(this.value)"
+              style="width:100%;background:var(--blue-800);border:1px solid var(--blue-600);
+              color:var(--white);font-size:0.875rem;font-weight:500;padding:6px 10px;
+              border-radius:var(--radius-sm);cursor:pointer;outline:none;
+              -webkit-appearance:auto;">
+            </select>
+          </div>
+        </div>
+        <nav style="padding:var(--space-2) 0;">
+          <div class="dl active" onclick="showS('apercu')">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg>Aperçu
+          </div>
+          <div class="dl" onclick="showS('creer')">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="6.5"/><line x1="8" y1="5" x2="8" y2="11"/><line x1="5" y1="8" x2="11" y2="8"/></svg>Créer un hackathon
+          </div>
+          <div class="dl" onclick="showS('equipes')">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="6" cy="5" r="2.5"/><path d="M1 13c0-2.8 2.2-4 5-4s5 1.2 5 4"/><line x1="13" y1="8" x2="13" y2="14"/><line x1="10" y1="11" x2="16" y2="11"/></svg>Équipes<span class="cnt" id="cnt-equipes">0</span>
+          </div>
+          <div class="dl" onclick="showS('soumissions')">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M13 10v2a2 2 0 01-2 2H5a2 2 0 01-2-2v-2"/><polyline points="10 5 8 3 6 5"/><line x1="8" y1="3" x2="8" y2="10"/></svg>Soumissions<span class="cnt" id="cnt-soum">0</span>
+          </div>
+          <div class="dl" onclick="showS('phases')">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="6.5"/><polyline points="8 4.5 8 8 10.5 10"/></svg>Phases
+          </div>
+          <div style="border-top:1px solid var(--blue-800);margin:var(--space-2) 0;"></div>
+          <div class="dl" onclick="window.location.href='../index.html'">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M10 3H13a1 1 0 011 1v9a1 1 0 01-1 1H3a1 1 0 01-1-1V4a1 1 0 011-1h3"/><polyline points="6 8 8 10 10 8"/><line x1="8" y1="3" x2="8" y2="10"/></svg>Vue publique
+          </div>
+        </nav>
+      </aside>
+
+      <div>
+        <!-- Aperçu -->
+        <div id="s-apercu">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-6);flex-wrap:wrap;gap:var(--space-3);">
+            <div><p class="section-eyebrow">Dashboard organisateur</p><h2 id="apercu-titre" style="color:var(--blue-900);">Chargement...</h2></div>
+            <button class="btn btn-primary btn-sm" onclick="showS('creer')">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="8" cy="8" r="6.5"/><line x1="8" y1="5" x2="8" y2="11"/><line x1="5" y1="8" x2="11" y2="8"/></svg>
+              Nouveau hackathon
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="showS('modifier')">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M11 2l3 3-8 8H3v-3l8-8z"/></svg>
+              Modifier
+            </button>
+          </div>
+          <div class="metrics-grid">
+            <div class="metric-card"><div class="metric-card__label">Équipes inscrites</div><div class="metric-card__value" id="m-equipes">—</div><div class="metric-card__sub">participants validés</div></div>
+            <div class="metric-card"><div class="metric-card__label">Participants</div><div class="metric-card__value" id="m-participants">—</div><div class="metric-card__sub">estimation</div></div>
+            <div class="metric-card"><div class="metric-card__label">Projets soumis</div><div class="metric-card__value" id="m-soumissions">—</div><div class="metric-card__sub metric-card__sub--warn" id="m-soum-sub">en attente d'évaluation</div></div>
+            <div class="metric-card"><div class="metric-card__label">Évalués</div><div class="metric-card__value" id="m-evalues">—</div><div class="metric-card__sub">par le jury</div></div>
+          </div>
+          <div class="phase-ctrl">
+            <div class="phase-ctrl__hdr">
+              <h3>Progression des phases</h3>
+              <button class="btn btn-primary btn-sm" onclick="nextPhase()">Phase suivante →</button>
+            </div>
+            <div class="psteps" id="ps-apercu"></div>
+          </div>
+          <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-lg);overflow:hidden;">
+            <div style="padding:var(--space-4) var(--space-5);border-bottom:1px solid var(--gray-100);display:flex;align-items:center;justify-content:space-between;">
+              <h3 style="font-size:0.9rem;color:var(--blue-900);">Dernières équipes</h3>
+              <button class="btn btn-outline btn-sm" onclick="showS('equipes')">Voir toutes</button>
+            </div>
+            <div class="table-wrapper" style="border-radius:0;border:none;">
+              <table><thead><tr><th>Équipe</th><th>Membres</th><th>Domaine</th><th>Statut</th><th></th></tr></thead><tbody id="tb-apercu"></tbody></table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Créer hackathon -->
+        <div id="s-creer" class="hidden">
+          <div style="margin-bottom:var(--space-6);">
+            <p class="section-eyebrow">Nouveau</p>
+            <h2 style="color:var(--blue-900);">Créer un hackathon</h2>
+          </div>
+          <div id="create-form-area"></div>
+        </div>
+
+        <!-- Modifier hackathon -->
+        <div id="s-modifier" class="hidden">
+          <div style="margin-bottom:var(--space-6);">
+            <p class="section-eyebrow">Édition</p>
+            <h2 style="color:var(--blue-900);">Modifier le hackathon</h2>
+          </div>
+          <div id="modifier-form-area"></div>
+        </div>
+
+        <!-- Équipes -->
+        <div id="s-equipes" class="hidden">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-6);">
+            <div><p class="section-eyebrow">Gestion</p><h2 style="color:var(--blue-900);">Équipes inscrites</h2></div>
+            <button class="btn btn-primary btn-sm" onclick="exportCSV()">Exporter CSV</button>
+          </div>
+          <div class="filters-bar">
+            <button class="filter-btn active" data-fi="all">Toutes</button>
+            <button class="filter-btn" data-fi="validee">Validées</button>
+            <button class="filter-btn" data-fi="en_attente">En attente</button>
+            <button class="filter-btn" data-fi="refusee">Refusées</button>
+          </div>
+          <div class="table-wrapper"><table><thead><tr><th>Équipe</th><th>Contact</th><th>Membres</th><th>Domaine</th><th>Statut</th><th>Actions</th></tr></thead><tbody id="tb-equipes"></tbody></table></div>
+        </div>
+
+        <!-- Soumissions -->
+        <div id="s-soumissions" class="hidden">
+          <div style="margin-bottom:var(--space-6);"><p class="section-eyebrow">Jury</p><h2 style="color:var(--blue-900);">Soumissions & évaluation</h2></div>
+          <div class="alert alert-info" style="margin-bottom:var(--space-5);">
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="flex-shrink:0;">
+              <circle cx="8" cy="8" r="6.5"/><line x1="8" y1="5.5" x2="8" y2="8.5"/>
+            </svg>
+            <span>Saisissez une note sur 100 pour chaque projet et cliquez sur Enregistrer.</span>
+          </div>
+          <div class="table-wrapper"><table><thead><tr><th>Équipe</th><th>Lien livrable</th><th>Soumis le</th><th>Note /100</th><th>Statut</th><th></th></tr></thead><tbody id="tb-soum"></tbody></table></div>
+        </div>
+
+        <!-- Phases -->
+        <div id="s-phases" class="hidden">
+          <div style="margin-bottom:var(--space-6);"><p class="section-eyebrow">Calendrier</p><h2 style="color:var(--blue-900);">Gestion des phases</h2></div>
+          <div class="phase-ctrl">
+            <div class="phase-ctrl__hdr">
+              <h3>Phases de la compétition</h3>
+              <div style="display:flex;gap:var(--space-2);">
+                <button class="btn btn-outline btn-sm" onclick="prevPhase()">← Précédente</button>
+                <button class="btn btn-primary btn-sm" onclick="nextPhase()">Suivante →</button>
+              </div>
+            </div>
+            <div class="psteps" id="ps-detail"></div>
+          </div>
+          <div id="phase-card" style="background:var(--blue-25);border:1px solid var(--blue-100);border-radius:var(--radius-lg);padding:var(--space-5) var(--space-6);"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="../js/utils.js"></script>
+<script>
+/* ── État global ─────────────────────────────────────────── */
+let HACK        = { id: null, phase_actuelle: 1, phases_total: 6, type: 'tech' };
+let INSCRIPTIONS = [];
+let SOUMISSIONS  = [];
+let MES_HACKS    = [];
+
+const PHASES_TECH  = [
+  { label:'Communication', desc:'Affiches, vidéos et passages en classe.',    action:'Lancer la communication et marquer terminée.' },
+  { label:'Inscriptions',  desc:'Formulaire ouvert pendant 10 jours.',        action:'Vérifier et valider les inscriptions en attente.' },
+  { label:'Formation',     desc:'Présentation des outils IA et dev.',         action:'Planifier la date et envoyer les convocations.' },
+  { label:'Développement', desc:'3 semaines de travail en équipe.',           action:'Organiser les points de suivi hebdomadaires.' },
+  { label:'Soumission',    desc:'Envoi des liens de repositories.',           action:'Vérifier que les repos sont publics et accessibles.' },
+  { label:'Évaluation',   desc:'Jury, pitch final, remise des prix.',        action:'Contacter les jurys et planifier les pitchs.' },
+];
+const PHASES_DATAJ = [
+  { label:'Communication', desc:'Campagne vidéo + affiches.',                 action:'Lancer la campagne deux semaines avant.' },
+  { label:'Lancement',     desc:'Ouverture officielle + inscriptions.',       action:'Publier le formulaire et annoncer les thématiques.' },
+  { label:'Production',    desc:'Les équipes produisent leur livrable.',      action:'Répondre aux questions des équipes.' },
+  { label:'Soumission',    desc:'Dépôt lien + rapport PDF.',                  action:'Vérifier que les liens sont accessibles.' },
+  { label:'Évaluation',   desc:'Jury externe évalue les productions.',       action:'Contacter le jury et préparer la cérémonie.' },
+];
+
+/* ── Navigation ──────────────────────────────────────────── */
+// Dans le tableau SS, ajouter 'modifier'
+const SS = ['apercu','creer','equipes','soumissions','phases','modifier'];
+
+// Nouvelle fonction à ajouter
+async function initModifyForm() {
+  if (!HACK.id) { toast('Aucun hackathon sélectionné.','error'); return; }
+  try {
+    const h = await apiFetch(`/hackathons/${HACK.id}`);
+    const cfg = h.config || {};
+    const isDataj = h.type === 'datajournalisme';
+
+    document.getElementById('modifier-form-area').innerHTML = `
+      <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:var(--space-6);margin-bottom:var(--space-4);">
+        <h3 style="color:var(--blue-900);margin-bottom:var(--space-5);">Informations générales</h3>
+        <div class="form-grid-2" style="margin-bottom:var(--space-4);">
+          <div class="form-group">
+            <label class="form-label">Titre</label>
+            <input class="form-control" id="m-titre" type="text" value="${h.titre||''}"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Organisateur</label>
+            <input class="form-control" id="m-org" type="text" value="${h.organisateur||''}"/>
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:var(--space-4);">
+          <label class="form-label">Description</label>
+          <textarea class="form-control" id="m-desc" rows="3">${h.description||''}</textarea>
+        </div>
+        <div class="form-grid-2" style="margin-bottom:var(--space-4);">
+          <div class="form-group">
+            <label class="form-label">Taille équipe max</label>
+            <input class="form-control" id="m-tmax" type="number" min="1" max="10" value="${h.taille_equipe_max||4}"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Statut</label>
+            <select class="form-control" id="m-statut">
+              ${['a_venir','inscriptions','en_cours','soumission','evaluation','termine'].map(s =>
+                `<option value="${s}" ${h.statut===s?'selected':''}>${s.replace('_',' ')}</option>`
+              ).join('')}
+            </select>
+          </div>
+        </div>
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label">Ouverture inscriptions</label>
+            <input class="form-control" id="m-dinsc" type="date" value="${h.date_debut_inscriptions?.split('T')[0]||''}"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Clôture inscriptions</label>
+            <input class="form-control" id="m-finsc" type="date" value="${h.date_fin_inscriptions?.split('T')[0]||''}"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Date soumission</label>
+            <input class="form-control" id="m-dsoum" type="date" value="${h.date_soumission?.split('T')[0]||''}"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Date évaluation</label>
+            <input class="form-control" id="m-deval" type="date" value="${h.date_evaluation?.split('T')[0]||''}"/>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:var(--space-6);margin-bottom:var(--space-4);">
+        <h3 style="color:var(--blue-900);margin-bottom:var(--space-5);">Configuration</h3>
+        <div class="form-group" style="margin-bottom:var(--space-4);">
+          <label class="form-label">${isDataj?'Thématiques':'Domaines'} <span style="color:var(--gray-400);font-size:0.75rem;">(un par ligne)</span></label>
+          <textarea class="form-control" id="m-items" rows="5">${(cfg[isDataj?'thematiques':'domaines']||[]).join('\n')}</textarea>
+        </div>
+        <div class="form-group" style="margin-bottom:var(--space-4);">
+          <label class="form-label">Livrables <span style="color:var(--gray-400);font-size:0.75rem;">(un par ligne)</span></label>
+          <textarea class="form-control" id="m-livrables" rows="3">${(cfg.livrables||[]).join('\n')}</textarea>
+        </div>
+        <div class="form-group" style="margin-bottom:var(--space-4);">
+          <label class="form-label">Règles <span style="color:var(--gray-400);font-size:0.75rem;">(une par ligne)</span></label>
+          <textarea class="form-control" id="m-regles" rows="4">${(cfg.regles||[]).join('\n')}</textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Jury <span style="color:var(--gray-400);font-size:0.75rem;">(un par ligne)</span></label>
+          <textarea class="form-control" id="m-jury" rows="3">${(cfg.jury||[]).join('\n')}</textarea>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;">
+        <button class="btn btn-outline" onclick="showS('apercu')">Annuler</button>
+        <button class="btn btn-primary" onclick="saveModify()">Enregistrer les modifications</button>
+      </div>`;
+  } catch(err) {
+    toast('Erreur de chargement : '+err.message,'error');
+  }
+}
+
+async function saveModify() {
+  const parse = id => (document.getElementById(id)?.value||'').split('\n').map(s=>s.trim()).filter(Boolean);
+  const toISO = id => { const v=document.getElementById(id)?.value; return v?v+'T00:00:00':null; };
+  const h = await apiFetch(`/hackathons/${HACK.id}`);
+  const isDataj = h.type === 'datajournalisme';
+
+  const payload = {
+    titre:        document.getElementById('m-titre')?.value.trim(),
+    type:         h.type,
+    organisateur: document.getElementById('m-org')?.value.trim(),
+    description:  document.getElementById('m-desc')?.value.trim(),
+    taille_equipe_min: h.taille_equipe_min || 1,
+    taille_equipe_max: parseInt(document.getElementById('m-tmax')?.value)||4,
+    date_debut_inscriptions: toISO('m-dinsc'),
+    date_fin_inscriptions:   toISO('m-finsc'),
+    date_soumission:         toISO('m-dsoum'),
+    date_evaluation:         toISO('m-deval'),
+    config: {
+      ...(h.config||{}),
+      [isDataj?'thematiques':'domaines']: parse('m-items'),
+      livrables: parse('m-livrables'),
+      regles:    parse('m-regles'),
+      jury:      parse('m-jury'),
+    }
+  };
+
+  try {
+    await apiFetch(`/hackathons/${HACK.id}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload)
+    });
+    toast('Hackathon mis à jour.','success');
+    await loadHackData(HACK.id);
+    showS('apercu');
+  } catch(err) {
+    toast(err.message,'error');
+  }
+}
+
+function showS(name) {
+  SS.forEach(s => document.getElementById('s-'+s)?.classList.toggle('hidden', s!==name));
+  document.querySelectorAll('.dl').forEach((l,i) => l.classList.toggle('active', SS[i]===name));
+  if (name === 'creer')    initCreateForm();
+  if (name === 'modifier') initModifyForm();  // <- ajouter cette ligne
+}
+
+/* ── Render phases ───────────────────────────────────────── */
+function getPhases() { return HACK.type==='tech' ? PHASES_TECH : PHASES_DATAJ; }
+
+function renderPhaseSteps(cid) {
+  const el = document.getElementById(cid); if (!el) return;
+  el.innerHTML = getPhases().map((p,i) => {
+    const n   = i+1;
+    const cls = n < HACK.phase_actuelle ? 'done' : n === HACK.phase_actuelle ? 'current' : '';
+    const icon = n < HACK.phase_actuelle
+      ? '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M2 6l3 3 5-5"/></svg>'
+      : n;
+    return `<div class="pstep ${cls}"><div class="pdot">${icon}</div><div class="plabel">${p.label}</div></div>`;
+  }).join('');
+}
+
+function renderPhaseCard() {
+  const el = document.getElementById('phase-card'); if (!el) return;
+  const phases = getPhases();
+  const p = phases[HACK.phase_actuelle - 1];
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-3);">
+      <div style="width:34px;height:34px;border-radius:50%;background:var(--blue-100);display:flex;align-items:center;justify-content:center;font-size:0.875rem;font-weight:500;color:var(--blue-800);">${HACK.phase_actuelle}</div>
+      <div>
+        <div style="font-size:0.7rem;color:var(--blue-500);font-weight:500;text-transform:uppercase;letter-spacing:0.06em;">Phase actuelle</div>
+        <div style="font-size:1rem;font-weight:500;color:var(--blue-900);">${p.label}</div>
+      </div>
+    </div>
+    <p style="font-size:0.875rem;color:var(--gray-600,#4B5563);margin-bottom:var(--space-3);">${p.desc}</p>
+    <div style="border-top:1px solid var(--blue-100);padding-top:var(--space-3);">
+      <p style="font-size:0.8125rem;font-weight:500;color:var(--blue-700);margin-bottom:2px;">Action recommandée</p>
+      <p style="font-size:0.8125rem;color:var(--gray-600,#4B5563);">${p.action}</p>
+    </div>`;
+}
+
+function refreshPhases() { renderPhaseSteps('ps-apercu'); renderPhaseSteps('ps-detail'); renderPhaseCard(); }
+
+async function nextPhase() {
+  if (HACK.phase_actuelle >= HACK.phases_total) { toast('Toutes les phases sont terminées.','info'); return; }
+  if (!HACK.id) { toast('Aucun hackathon sélectionné.','error'); return; }
+  try {
+    const res = await apiFetch(`/hackathons/${HACK.id}/phase?nouvelle_phase=${HACK.phase_actuelle+1}`,{method:'PATCH'});
+    HACK.phase_actuelle = res.phase_actuelle;
+    refreshPhases();
+    toast('Phase avancée : '+getPhases()[HACK.phase_actuelle-1].label,'success');
+  } catch(err){ toast(err.message,'error'); }
+}
+function prevPhase() {
+  if (HACK.phase_actuelle > 1) { HACK.phase_actuelle--; refreshPhases(); }
+}
+
+/* ── Sélecteur de hackathon ──────────────────────────────── */
+function renderHackSelector() {
+  const sel = document.getElementById('hack-selector');
+  if (!sel) return;
+  if (!MES_HACKS.length) {
+    sel.innerHTML = '<option value="">Aucun hackathon créé</option>';
+    return;
+  }
+  sel.innerHTML = MES_HACKS.map(h =>
+    `<option value="${h.id}" ${h.id==HACK.id?'selected':''}>${h.titre}</option>`
+  ).join('');
+}
+
+async function switchHack(id) {
+  if (!id) return;
+  HACK.id = id;
+  await loadHackData(id);
+}
+
+/* ── Chargement données hackathon ────────────────────────── */
+async function loadHackData(hackId) {
+  try {
+    const [dash, inscriptions, soumissions, hack] = await Promise.all([
+      apiFetch(`/organisateurs/dashboard/${hackId}`),
+      apiFetch(`/inscriptions?hackathon_id=${hackId}`),
+      apiFetch(`/soumissions?hackathon_id=${hackId}`),
+      apiFetch(`/hackathons/${hackId}`),
+    ]);
+    HACK.phase_actuelle = dash.phase_actuelle || 1;
+    HACK.phases_total   = hack.phases_total || 6;
+    HACK.type           = hack.type || 'tech';
+    INSCRIPTIONS        = inscriptions || [];
+    SOUMISSIONS         = soumissions  || [];
+
+    const set = (id, val) => { const el=document.getElementById(id); if(el) el.textContent=val; };
+    set('m-equipes',      dash.nb_inscrits    || 0);
+    set('m-participants', (dash.nb_inscrits||0)*3);
+    set('m-soumissions',  dash.nb_soumissions || 0);
+    set('m-evalues',      dash.nb_evalues     || 0);
+    set('apercu-titre',   hack.titre || '');
+
+    document.querySelectorAll('.sn-name').forEach(el => el.textContent = hack.titre || '');
+
+    refreshPhases();
+    renderInscriptions();
+    renderSoumissions();
+  } catch(err) {
+    toast('Erreur de chargement : ' + err.message, 'error');
+  }
+}
+
+/* ── Tables équipes ──────────────────────────────────────── */
+function renderInscriptions(filter='all') {
+  const data = filter==='all' ? INSCRIPTIONS : INSCRIPTIONS.filter(i=>i.statut===filter);
+  const row = i => {
+    const nb     = Array.isArray(i.membres) ? i.membres.length : (i.membres||0);
+    const domaine= i.domaine||i.thematique||'—';
+    const dotCls = {validee:'g',en_attente:'a',refusee:'r'}[i.statut]||'a';
+    const lbl    = {validee:'Validée',en_attente:'En attente',refusee:'Refusée'}[i.statut]||i.statut;
+    return `<tr>
+      <td style="font-weight:500;">${i.nom_equipe||'—'}</td>
+      <td style="color:var(--gray-500);font-size:0.8125rem;">${i.email_contact||'—'}</td>
+      <td>${nb}</td>
+      <td><span class="tag" style="font-size:0.75rem;">${domaine}</span></td>
+      <td><span class="sdot ${dotCls}"></span>${lbl}</td>
+      <td>${i.statut==='en_attente'
+        ?`<button class="action-btn abg" onclick="valider(${i.id})">Valider</button>
+          <button class="action-btn abr" onclick="refuser(${i.id})">Refuser</button>`:''}</td>
+    </tr>`;
+  };
+  const tbe=document.getElementById('tb-equipes');
+  const tba=document.getElementById('tb-apercu');
+  const empty='<tr><td colspan="6" style="text-align:center;color:var(--gray-400);padding:20px;">Aucune équipe.</td></tr>';
+  if(tbe) tbe.innerHTML=data.length?data.map(row).join(''):empty;
+  if(tba) tba.innerHTML=INSCRIPTIONS.slice(0,4).map(row).join('') || empty;
+}
+
+async function valider(id) {
+  try {
+    await apiFetch(`/inscriptions/${id}/statut?statut=validee`,{method:'PATCH'});
+    const i=INSCRIPTIONS.find(e=>e.id===id);
+    if(i){i.statut='validee';renderInscriptions();toast('Équipe validée.','success');}
+  } catch(err){toast(err.message,'error');}
+}
+async function refuser(id) {
+  try {
+    await apiFetch(`/inscriptions/${id}/statut?statut=refusee`,{method:'PATCH'});
+    const i=INSCRIPTIONS.find(e=>e.id===id);
+    if(i){i.statut='refusee';renderInscriptions();toast('Équipe refusée.','info');}
+  } catch(err){toast(err.message,'error');}
+}
+
+/* ── Soumissions ─────────────────────────────────────────── */
+function renderSoumissions() {
+  const tbody=document.getElementById('tb-soum'); if(!tbody) return;
+  if(!SOUMISSIONS.length){
+    tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--gray-400);padding:20px;">Aucune soumission pour l\'instant.</td></tr>';
+    return;
+  }
+  tbody.innerHTML=SOUMISSIONS.map(s=>{
+    const lien=s.lien_repo||s.lien_livrable||'';
+    const lienAff=lien.replace(/^https?:\/\//,'');
+    const date=s.created_at?new Date(s.created_at).toLocaleDateString('fr-FR'):'—';
+    return `<tr>
+      <td style="font-weight:500;">${s.nom_equipe||s.inscription_id}</td>
+      <td>${lien?`<a href="${lien}" target="_blank" style="color:var(--blue-600);font-size:0.8125rem;">${lienAff}</a>`:'—'}</td>
+      <td style="font-size:0.8125rem;color:var(--gray-500);">${date}</td>
+      <td>${s.statut==='evaluee'
+        ?`<span style="font-weight:500;color:var(--blue-800);">${s.note_jury}/100</span>`
+        :`<input class="note-input" type="number" min="0" max="100" placeholder="—" id="n-${s.id}"/>`}</td>
+      <td><span class="badge ${s.statut==='evaluee'?'badge-green':'badge-amber'}">${s.statut==='evaluee'?'Évalué':'Soumis'}</span></td>
+      <td>${s.statut!=='evaluee'?`<button class="btn btn-primary btn-sm" onclick="noter(${s.id})">Enregistrer</button>`:''}</td>
+    </tr>`;
+  }).join('');
+}
+
+async function noter(id) {
+  const v=parseInt(document.getElementById('n-'+id)?.value);
+  if(isNaN(v)||v<0||v>100){toast('Note invalide (0–100).','error');return;}
+  try {
+    await apiFetch(`/soumissions/${id}/evaluer?note=${v}`,{method:'PATCH'});
+    const s=SOUMISSIONS.find(s=>s.id===id);
+    if(s){s.note_jury=v;s.statut='evaluee';renderSoumissions();toast('Note enregistrée.','success');}
+  } catch(err){toast(err.message,'error');}
+}
+
+document.querySelectorAll('[data-fi]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('[data-fi]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    renderInscriptions(btn.dataset.fi);
+  });
+});
+
+function exportCSV(){
+  const rows=[['Équipe','Email','Membres','Domaine','Statut'],...INSCRIPTIONS.map(i=>[
+    i.nom_equipe||'—', i.email_contact||'—',
+    Array.isArray(i.membres)?i.membres.length:(i.membres||0),
+    i.domaine||i.thematique||'—', i.statut
+  ])];
+  const csv=rows.map(r=>r.join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='equipes.csv'; a.click();
+  toast('Export CSV téléchargé.','success');
+}
+
+/* ── Formulaire création hackathon ───────────────────────── */
+let createStep = 1;
+const createData = { type: 'tech', config: {} };
+
+function initCreateForm() {
+  createStep = 1;
+  Object.assign(createData, { type:'tech', config:{} });
+  renderCreateStep();
+}
+
+function renderCreateStep() {
+  const container = document.getElementById('create-form-area');
+  const steps = ['Informations de base','Configuration','Prix & jury'];
+
+  const stepsHTML = steps.map((s,i) => {
+    const n=i+1;
+    const cls=n<createStep?'done':n===createStep?'active':'';
+    const dot=n<createStep?'<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1.5 5l2.5 2.5 4.5-4.5"/></svg>':n;
+    return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;min-width:80px;">
+      <div style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:500;z-index:1;
+        ${cls==='active'?'background:var(--blue-600);color:#fff;':''}
+        ${cls==='done'?'background:var(--success-mid);color:#fff;':''}
+        ${cls===''?'background:var(--gray-100);color:var(--gray-500);border:1px solid var(--gray-200);':''}
+      ">${dot}</div>
+      <div style="font-size:0.7rem;margin-top:6px;color:${cls==='active'?'var(--blue-700)':cls==='done'?'var(--success-dark)':'var(--gray-400)'};">${s}</div>
+    </div>`;
+  }).join('');
+
+  let formHTML = '';
+  if (createStep === 1) {
+    formHTML = `
+      <div class="form-grid-2" style="margin-bottom:var(--space-4);">
+        <div class="form-group">
+          <label class="form-label">Titre <span class="required">*</span></label>
+          <input class="form-control" id="c-titre" type="text" placeholder="Ex : Tech & Data Innovation 2025" value="${createData.titre||''}"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Type <span class="required">*</span></label>
+          <select class="form-control" id="c-type" onchange="createData.type=this.value">
+            <option value="tech" ${createData.type==='tech'?'selected':''}>Tech & Data</option>
+            <option value="datajournalisme" ${createData.type==='datajournalisme'?'selected':''}>Datajournalisme</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:var(--space-4);">
+        <label class="form-label">Organisateur</label>
+        <input class="form-control" id="c-org" type="text" placeholder="Ex : Club Informatique ENSAE" value="${createData.organisateur||''}"/>
+      </div>
+      <div class="form-group" style="margin-bottom:var(--space-4);">
+        <label class="form-label">Description</label>
+        <textarea class="form-control" id="c-desc" rows="3" placeholder="Décrivez les objectifs du hackathon...">${createData.description||''}</textarea>
+      </div>
+      <div class="form-grid-2" style="margin-bottom:var(--space-4);">
+        <div class="form-group">
+          <label class="form-label">Taille équipe min</label>
+          <input class="form-control" id="c-tmin" type="number" min="1" max="10" value="${createData.taille_equipe_min||1}"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Taille équipe max <span class="required">*</span></label>
+          <input class="form-control" id="c-tmax" type="number" min="1" max="10" value="${createData.taille_equipe_max||4}"/>
+        </div>
+      </div>
+      <div class="form-grid-2" style="margin-bottom:var(--space-4);">
+        <div class="form-group">
+          <label class="form-label">Ouverture inscriptions</label>
+          <input class="form-control" id="c-dinsc" type="date" value="${createData.date_debut_inscriptions?.split('T')[0]||''}"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Clôture inscriptions</label>
+          <input class="form-control" id="c-finsc" type="date" value="${createData.date_fin_inscriptions?.split('T')[0]||''}"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date soumission</label>
+          <input class="form-control" id="c-dsoum" type="date" value="${createData.date_soumission?.split('T')[0]||''}"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date évaluation</label>
+          <input class="form-control" id="c-deval" type="date" value="${createData.date_evaluation?.split('T')[0]||''}"/>
+        </div>
+      </div>`;
+  } else if (createStep === 2) {
+    const isDataj = createData.type === 'datajournalisme';
+    const cfg = createData.config || {};
+    const items = (cfg[isDataj?'thematiques':'domaines']||[]).join('\n');
+    const livrables = (cfg.livrables||[]).join('\n');
+    const regles = (cfg.regles||[]).join('\n');
+    const competences = (cfg.competences||[]).join('\n');
+    formHTML = `
+      <div class="form-group" style="margin-bottom:var(--space-4);">
+        <label class="form-label">${isDataj?'Thématiques imposées':'Domaines d\'intervention'} <span style="color:var(--gray-400);font-size:0.75rem;">(une par ligne)</span></label>
+        <textarea class="form-control" id="c-items" rows="5" placeholder="${isDataj?'Le climat\nL\'éducation\nLa santé':'Agriculture\nSanté\nÉducation'}">${items}</textarea>
+      </div>
+      <div class="form-group" style="margin-bottom:var(--space-4);">
+        <label class="form-label">Types de livrables <span style="color:var(--gray-400);font-size:0.75rem;">(un par ligne)</span></label>
+        <textarea class="form-control" id="c-livrables" rows="3" placeholder="${isDataj?'Article web\nReportage vidéo\nReportage vocal':'Application web\nDashboard interactif\nModèle prédictif'}">${livrables}</textarea>
+      </div>
+      ${!isDataj?`<div class="form-group" style="margin-bottom:var(--space-4);">
+        <label class="form-label">Compétences valorisées <span style="color:var(--gray-400);font-size:0.75rem;">(une par ligne)</span></label>
+        <textarea class="form-control" id="c-comp" rows="3" placeholder="Python\nR\nSQL\nWeb dev">${competences}</textarea>
+      </div>`:''}
+      <div class="form-group">
+        <label class="form-label">Règles de participation <span style="color:var(--gray-400);font-size:0.75rem;">(une par ligne)</span></label>
+        <textarea class="form-control" id="c-regles" rows="4" placeholder="1 à ${createData.taille_equipe_max||4} membres par équipe\nLivrable fonctionnel obligatoire">${regles}</textarea>
+      </div>`;
+  } else {
+    const cfg = createData.config || {};
+    const jury = (cfg.jury||[]).join('\n');
+    const isDataj = createData.type === 'datajournalisme';
+    formHTML = `
+      ${isDataj?`<div class="form-grid-2" style="margin-bottom:var(--space-4);">
+        <div class="form-group">
+          <label class="form-label">1er prix (FCFA)</label>
+          <input class="form-control" id="c-prix1" type="number" placeholder="50000" value="${cfg.prix?.[0]?.montant?.replace(/\D/g,'')||''}"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">2e prix (FCFA)</label>
+          <input class="form-control" id="c-prix2" type="number" placeholder="35000" value="${cfg.prix?.[1]?.montant?.replace(/\D/g,'')||''}"/>
+        </div>
+      </div>`:''}
+      <div class="form-group">
+        <label class="form-label">Membres du jury <span style="color:var(--gray-400);font-size:0.75rem;">(un par ligne)</span></label>
+        <textarea class="form-control" id="c-jury" rows="4" placeholder="M. Mamadou Diop\nMme Iphygénie Sarr">${jury}</textarea>
+      </div>
+      <div class="alert alert-info" style="margin-top:var(--space-5);">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="flex-shrink:0;">
+          <circle cx="8" cy="8" r="6.5"/><line x1="8" y1="5.5" x2="8" y2="8.5"/>
+        </svg>
+        <span>Le hackathon sera créé avec le statut <strong>À venir</strong>. Vous pourrez avancer les phases depuis l'aperçu.</span>
+      </div>`;
+  }
+
+  container.innerHTML = `
+    <div style="display:flex;gap:0;margin-bottom:var(--space-6);position:relative;">
+      <div style="position:absolute;top:14px;left:14%;right:14%;height:1px;background:var(--gray-200);z-index:0;"></div>
+      ${stepsHTML}
+    </div>
+    <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:var(--space-6);">
+      ${formHTML}
+      <div style="display:flex;justify-content:space-between;margin-top:var(--space-5);">
+        <button class="btn btn-outline" onclick="createStep > 1 ? (createStep--, renderCreateStep()) : showS('apercu')">${createStep>1?'Retour':'Annuler'}</button>
+        <button class="btn btn-primary" onclick="nextCreateStep()">
+          ${createStep<3?'Suivant →':'Créer le hackathon'}
+        </button>
+      </div>
+    </div>`;
+}
+
+function nextCreateStep() {
+  if (createStep === 1) {
+    const titre = document.getElementById('c-titre')?.value.trim();
+    if (!titre) { toast('Le titre est obligatoire.','error'); return; }
+    createData.titre       = titre;
+    createData.type        = document.getElementById('c-type')?.value || 'tech';
+    createData.organisateur= document.getElementById('c-org')?.value.trim();
+    createData.description = document.getElementById('c-desc')?.value.trim();
+    createData.taille_equipe_min = parseInt(document.getElementById('c-tmin')?.value)||1;
+    createData.taille_equipe_max = parseInt(document.getElementById('c-tmax')?.value)||4;
+    const toISO = id => { const v=document.getElementById(id)?.value; return v?v+'T00:00:00':null; };
+    createData.date_debut_inscriptions = toISO('c-dinsc');
+    createData.date_fin_inscriptions   = toISO('c-finsc');
+    createData.date_soumission         = toISO('c-dsoum');
+    createData.date_evaluation         = toISO('c-deval');
+    createStep = 2;
+    renderCreateStep();
+  } else if (createStep === 2) {
+    const parse = id => (document.getElementById(id)?.value||'').split('\n').map(s=>s.trim()).filter(Boolean);
+    const isDataj = createData.type==='datajournalisme';
+    const items = parse('c-items');
+    createData.config = {
+      ...(createData.config||{}),
+      [isDataj?'thematiques':'domaines']: items,
+      livrables: parse('c-livrables'),
+      regles:    parse('c-regles'),
+      ...(isDataj ? {} : { competences: parse('c-comp') }),
+    };
+    createStep = 3;
+    renderCreateStep();
+  } else {
+    submitCreate();
+  }
+}
+
+async function submitCreate() {
+  const parse = id => (document.getElementById(id)?.value||'').split('\n').map(s=>s.trim()).filter(Boolean);
+  const isDataj = createData.type==='datajournalisme';
+  const jury = parse('c-jury');
+  if (isDataj) {
+    const p1 = document.getElementById('c-prix1')?.value;
+    const p2 = document.getElementById('c-prix2')?.value;
+    createData.config.prix = [];
+    if (p1) createData.config.prix.push({ rang:'1er prix', montant: p1+' FCFA' });
+    if (p2) createData.config.prix.push({ rang:'2e prix',  montant: p2+' FCFA' });
+  }
+  if (jury.length) createData.config.jury = jury;
+
+  const btn = document.querySelector('#create-form-area .btn-primary');
+  if (btn) { btn.disabled=true; btn.textContent='Création...'; }
+  try {
+    const newHack = await apiFetch('/hackathons',{method:'POST',body:JSON.stringify(createData)});
+    MES_HACKS.push(newHack);
+    HACK.id           = newHack.id;
+    HACK.phase_actuelle = 1;
+    HACK.phases_total = newHack.phases_total || 6;
+    HACK.type         = newHack.type;
+    renderHackSelector();
+    toast(`Hackathon "${newHack.titre}" créé avec succès !`,'success');
+    await loadHackData(newHack.id);
+    showS('apercu');
+  } catch(err) {
+    toast(err.message||'Erreur lors de la création.','error');
+    if (btn) { btn.disabled=false; btn.textContent='Créer le hackathon'; }
+  }
+}
+
+/* ── Init ─────────────────────────────────────────────────── */
+async function init() {
+  if (!Auth.requireLogin('../pages/login.html')) return;
+  const user = Auth.getUser();
+  document.querySelectorAll('.org-name').forEach(el => el.textContent = `${user.prenom||''} ${user.nom||''}`.trim());
+
+  try {
+    MES_HACKS = await apiFetch('/hackathons');
+    renderHackSelector();
+    if (MES_HACKS.length) {
+      HACK.id = MES_HACKS[0].id;
+      await loadHackData(MES_HACKS[0].id);
+    } else {
+      toast('Aucun hackathon. Créez-en un pour commencer.','info');
+    }
+  } catch(err) {
+    toast('Erreur de chargement : '+err.message,'error');
+    refreshPhases();
+  }
+}
+
+init();
+</script>
+</body>
+</html>
