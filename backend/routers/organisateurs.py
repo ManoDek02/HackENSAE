@@ -53,5 +53,7 @@ def classement(hackathon_id: int, db: Session = Depends(get_db)):
             "note": s.note_jury,
             "commentaire": s.commentaire,
             "lien": s.lien_repo or s.lien_livrable,
+            "domaine": insc.domaine if insc else None,
+            "thematique": insc.thematique if insc else None,
         })
     return result

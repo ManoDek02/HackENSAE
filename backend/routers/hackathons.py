@@ -10,7 +10,7 @@ from pydantic import BaseModel
 from datetime import datetime
 
 from backend.database import get_db
-from backend.models.models import Hackathon, Inscription
+from backend.models.models import Hackathon, Inscription, Soumission
 from backend.core.security import require_role, get_current_user
 
 router = APIRouter(redirect_slashes=False)
@@ -103,9 +103,9 @@ def get_hackathon(hackathon_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Hackathon introuvable.")
     nb  = db.query(func.count(Inscription.id)).filter(
           Inscription.hackathon_id == h.id, Inscription.statut=="validee").scalar() or 0
-    nb_soum = db.query(func.count()).select_from(
-        __import__('backend.models.models', fromlist=['Soumission']).Soumission
-    ).filter_by(hackathon_id=h.id).scalar() or 0
+    nb_soum = db.query(func.count(Soumission.id)).filter(
+        Soumission.hackathon_id == h.id
+    ).scalar() or 0
     cfg = h.config or {}
     return {
         **{c.name: getattr(h, c.name) for c in h.__table__.columns},

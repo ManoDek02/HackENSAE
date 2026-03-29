@@ -5,6 +5,7 @@ from fastapi.responses import FileResponse, HTMLResponse
 from pathlib import Path
 import os
 
+from contextlib import asynccontextmanager
 from backend.database import create_tables
 from backend.routers import hackathons, inscriptions, auth, soumissions, organisateurs
 
@@ -35,9 +36,12 @@ app.include_router(organisateurs.router, prefix="/api/organisateurs", tags=["Org
 async def health():
     return {"status": "ok", "service": "HackENSAE"}
 
-@app.on_event("startup")
-async def startup():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     create_tables()
+    yield
+
+app = FastAPI(..., lifespan=lifespan)
 
 # ── Pages HTML ───────────────────────────────────────────────
 FRONTEND = Path("frontend")
