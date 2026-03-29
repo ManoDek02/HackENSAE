@@ -544,7 +544,10 @@ async function noter(id) {
   const v=parseInt(document.getElementById('n-'+id)?.value);
   if(isNaN(v)||v<0||v>100){toast('Note invalide (0–100).','error');return;}
   try {
-    await apiFetch(`/soumissions/${id}/evaluer?note=${v}`,{method:'PATCH'});
+    await apiFetch(`/soumissions/${id}/evaluer`,{
+      method:'PATCH',
+      body: JSON.stringify({ note: v })
+    });
     const s=SOUMISSIONS.find(s=>s.id===id);
     if(s){s.note_jury=v;s.statut='evaluee';renderSoumissions();toast('Note enregistrée.','success');}
   } catch(err){toast(err.message,'error');}

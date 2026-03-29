@@ -122,7 +122,22 @@ def list_inscriptions(hackathon_id: Optional[int] = None,
 
 @router.get("/me")
 def my_inscriptions(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    return db.query(Inscription).filter(Inscription.chef_id == current_user.id).all()
+    inscriptions = db.query(Inscription).filter(Inscription.chef_id == current_user.id).all()
+    return [
+        {
+            "id": i.id,
+            "hackathon_id": i.hackathon_id,
+            "nom_equipe": i.nom_equipe,
+            "email_contact": i.email_contact,
+            "membres": i.membres,
+            "domaine": i.domaine,
+            "thematique": i.thematique,
+            "livrable_type": i.livrable_type,
+            "statut": i.statut,
+            "created_at": i.created_at,
+        }
+        for i in inscriptions
+    ]
 
 @router.patch("/{inscription_id}/statut")
 def changer_statut(inscription_id: int, statut: str, db: Session = Depends(get_db),

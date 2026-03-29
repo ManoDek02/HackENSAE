@@ -337,7 +337,7 @@
         </div>
         <div class="form-group">
           <label class="form-label">Email de contact <span class="required">*</span></label>
-          <input class="form-control" type="email" id="f-email" placeholder="chef.equipe@ensae.sn" value="${state.email}" required/>
+          <input class="form-control" type="email" id="f-email" placeholder="chef.equipe@ensae.sn" value="${state.email_contact}" required/>
           <span class="form-error"></span>
         </div>
       </div>
@@ -500,29 +500,44 @@
 
   /* ── Navigation entre étapes ───────────────────────────── */
   function goStep(n) {
+    // Sauvegarder étape 1 si les champs sont présents dans le DOM
+    const fEquipe = document.getElementById('f-equipe');
+    const fEmail  = document.getElementById('f-email');
+    if (fEquipe && fEquipe.value.trim()) state.equipe        = fEquipe.value.trim();
+    if (fEmail  && fEmail.value.trim())  state.email_contact = fEmail.value.trim();
+
     if (n === 2) {
-      state.equipe        = document.getElementById('f-equipe')?.value.trim();
-      state.email_contact = document.getElementById('f-email')?.value.trim();
-      if (!state.equipe || !state.email_contact) { toast('Veuillez remplir les champs obligatoires.', 'error'); return; }
+      if (!state.equipe) {
+        toast('Le nom de l\'équipe est obligatoire.', 'error'); return;
+      }
+      if (!state.email_contact) {
+        toast('L\'email de contact est obligatoire.', 'error'); return;
+      }
     }
+
     if (n === 3) {
       state.membres = Array.from({length: state.nb_membres}, (_, i) => ({
-        nom:    document.getElementById(`m-nom-${i}`)?.value.trim() || '',
+        nom:     document.getElementById(`m-nom-${i}`)?.value.trim() || '',
         filiere: document.getElementById(`m-filiere-${i}`)?.value || ''
       }));
-      if (!state.membres[0].nom) { toast('Le nom du chef d\'équipe est obligatoire.', 'error'); return; }
+      if (!state.membres[0]?.nom) {
+        toast('Le nom du chef d\'équipe est obligatoire.', 'error'); return;
+      }
     }
+
     if (n === 4) {
       if (isTech) {
-        state.description    = document.getElementById('f-desc')?.value || '';
+        state.description     = document.getElementById('f-desc')?.value || '';
         state.livrable_format = document.getElementById('f-livrable-format')?.value || '';
       } else {
-        state.livrable_lien = document.getElementById('f-lien')?.value.trim() || '';
-        if (!state.thematique) { toast('Veuillez choisir une thématique.', 'error'); return; }
+        if (!state.thematique) {
+          toast('Veuillez choisir une thématique.', 'error'); return;
+        }
       }
       submitInscription();
       return;
     }
+
     currentStep = n;
     renderSteps();
     const renderers = { 1: renderStep1, 2: renderStep2, 3: renderStep3 };
@@ -625,21 +640,35 @@
 
   /* ── Soumission ──────────────────────────────────────────*/
   async function submitInscription() {
+    console.log('=== DEBUG STATE ===');
+    console.log('equipe:', state.equipe);
+    console.log('email_contact:', state.email_contact);
+    console.log('membres:', state.membres);
+    console.log('thematique:', state.thematique);
+    console.log('livrable_type:', state.livrable_type);
+    console.log('hackathon id:', H.id);
+    console.log('==================');
+
+    if (!state.equipe || !state.email_contact) {
+      toast('Informations de l\'équipe incomplètes. Retournez à l\'étape 1.', 'error');
+      return;
+    }
     const payload = {
-      hackathon_id: H.id,
-      nom_equipe:   state.equipe,
-      email_contact:   state.email_contact,
-      membres:      state.membres,
-      domaine:      state.domaine,
-      thematique:   state.thematique,
+      hackathon_id:  H.id,
+      nom_equipe:    state.equipe,
+      email_contact: state.email_contact,
+      membres:       state.membres,
+      domaine:       state.domaine,
+      thematique:    state.thematique,
       livrable_type: state.livrable_type,
     };
-      console.log('Payload envoyé :', JSON.stringify(payload, null, 2));
+    console.log('Payload final:', JSON.stringify(payload, null, 2));
     try {
       await apiFetch('/inscriptions', { method:'POST', body: JSON.stringify(payload) });
       await new Promise(r => setTimeout(r, 800));
       renderSuccess();
     } catch (err) {
+      console.error('Erreur API:', err);
       toast(err.message || 'Erreur lors de l\'inscription.', 'error');
     }
   }
