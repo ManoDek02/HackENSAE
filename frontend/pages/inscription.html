@@ -344,7 +344,7 @@
 
       <div style="display:flex;justify-content:flex-end;gap:var(--space-3);margin-top:var(--space-4);">
         <a href="../index.html" class="btn btn-outline">Retour</a>
-        <button class="btn btn-primary" onclick="goStep(2)">Suivant — Membres</button>
+        <button class="btn btn-primary" onclick="saveStep1AndContinue()">Suivant — Membres</button>
       </div>
     `;
   }
@@ -498,23 +498,18 @@
     `;
   }
 
+  function saveStep1AndContinue() {
+    const equipe = document.getElementById('f-equipe')?.value.trim();
+    const email  = document.getElementById('f-email')?.value.trim();
+    if (!equipe) { toast('Le nom de l\'équipe est obligatoire.', 'error'); return; }
+    if (!email)  { toast('L\'email de contact est obligatoire.', 'error'); return; }
+    state.equipe        = equipe;
+    state.email_contact = email;
+    goStep(2);
+  }
+
   /* ── Navigation entre étapes ───────────────────────────── */
   function goStep(n) {
-    // Sauvegarder étape 1 si les champs sont présents dans le DOM
-    const fEquipe = document.getElementById('f-equipe');
-    const fEmail  = document.getElementById('f-email');
-    if (fEquipe && fEquipe.value.trim()) state.equipe        = fEquipe.value.trim();
-    if (fEmail  && fEmail.value.trim())  state.email_contact = fEmail.value.trim();
-
-    if (n === 2) {
-      if (!state.equipe) {
-        toast('Le nom de l\'équipe est obligatoire.', 'error'); return;
-      }
-      if (!state.email_contact) {
-        toast('L\'email de contact est obligatoire.', 'error'); return;
-      }
-    }
-
     if (n === 3) {
       state.membres = Array.from({length: state.nb_membres}, (_, i) => ({
         nom:     document.getElementById(`m-nom-${i}`)?.value.trim() || '',
