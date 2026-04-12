@@ -258,6 +258,26 @@
   const H = HACKATHONS[hackId] || HACKATHONS[1];
   const isTech = H.type === 'tech';
 
+  async function checkHackathonStatus() {
+    try {
+      const hackData = await apiFetch(`/hackathons/${H.id}`);
+      if (!['inscriptions', 'en_cours'].includes(hackData.statut)) {
+        document.getElementById('main-page').innerHTML = `
+          <div style="padding:var(--space-12) var(--space-8);text-align:center;">
+            <div style="font-size:2rem;margin-bottom:var(--space-4);">🔒</div>
+            <h2 style="color:var(--blue-900);margin-bottom:var(--space-3);">Inscriptions fermées</h2>
+            <p style="color:var(--gray-500);margin-bottom:var(--space-6);">
+              Les inscriptions pour <strong>${hackData.titre}</strong> ne sont pas encore ouvertes.
+              Statut actuel : <strong>${hackData.statut.replace('_', ' ')}</strong>
+            </p>
+            <a href="../index.html" class="btn btn-primary">Retour aux hackathons</a>
+          </div>`;
+      }
+    } catch(err) {
+      // Si l'API échoue, on laisse continuer
+    }
+  }
+
   /* ── Render hero ───────────────────────────────────────── */
   document.getElementById('hero-area').innerHTML = `
     <div style="background:${H.heroBg};padding:var(--space-8) var(--space-8) var(--space-6);position:relative;overflow:hidden;">
@@ -332,7 +352,9 @@
           </div>
           <div class="form-group">
             <label class="form-label">Nombre de membres <span class="required">*</span></label>
-            <select class="form-control" id="f-nb-membres" onchange="state.nb_membres=+this.value;renderStep2()">${maxOpts}</select>
+            <select class="form-control" id="f-nb-membres" onchange="state.nb_membres=+this.value;">
+              ${maxOpts}
+            </select>
           </div>
         </div>
         <div class="form-group">
@@ -344,7 +366,7 @@
 
       <div style="display:flex;justify-content:flex-end;gap:var(--space-3);margin-top:var(--space-4);">
         <a href="../index.html" class="btn btn-outline">Retour</a>
-        <button class="btn btn-primary" onclick="saveStep1AndContinue()">Suivant — Membres</button>
+        <button class="btn btn-primary" onclick="console.log('BOUTON CLIQUÉ'); saveStep1AndContinue()">Suivant — Membres</button>
       </div>
     `;
   }
@@ -673,6 +695,7 @@
   renderSteps();
   renderStep1();
   renderSidebar();
+  checkHackathonStatus();
   </script>
 </body>
 </html>

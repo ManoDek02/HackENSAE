@@ -683,16 +683,6 @@ function renderCreateStep() {
     const jury = (cfg.jury||[]).join('\n');
     const isDataj = createData.type === 'datajournalisme';
     formHTML = `
-      ${isDataj?`<div class="form-grid-2" style="margin-bottom:var(--space-4);">
-        <div class="form-group">
-          <label class="form-label">1er prix (FCFA)</label>
-          <input class="form-control" id="c-prix1" type="number" placeholder="50000" value="${cfg.prix?.[0]?.montant?.replace(/\D/g,'')||''}"/>
-        </div>
-        <div class="form-group">
-          <label class="form-label">2e prix (FCFA)</label>
-          <input class="form-control" id="c-prix2" type="number" placeholder="35000" value="${cfg.prix?.[1]?.montant?.replace(/\D/g,'')||''}"/>
-        </div>
-      </div>`:''}
       <div class="form-group">
         <label class="form-label">Membres du jury <span style="color:var(--gray-400);font-size:0.75rem;">(un par ligne)</span></label>
         <textarea class="form-control" id="c-jury" rows="4" placeholder="M. Mamadou Diop\nMme Iphygénie Sarr">${jury}</textarea>
