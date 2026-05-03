@@ -3,12 +3,14 @@
   publish = "frontend"
 
 [functions]
-  # Netlify va scanner la racine et trouver main.py
-  included_files = ["backend/**", "frontend/**"]
+  # On indique le nouveau dossier
+  directory = "netlify/functions"
+  # On inclut le dossier backend pour que la fonction puisse faire ses imports
+  included_files = ["backend/**"]
 
 [[redirects]]
   from = "/api/*"
-  # ICI : 'main' doit correspondre au nom de ton fichier 'main.py'
+  # Le nom 'main' correspond au nom de ton fichier 'main.py'
   to = "/.netlify/functions/main/:splat"
   status = 200
 
