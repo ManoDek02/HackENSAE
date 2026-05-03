@@ -1,0 +1,19 @@
+[build]
+  command = "pip install -r requirements.txt"
+  publish = "frontend" # Netlify servira directement index.html, css/ et js/
+
+[functions]
+  # On inclut le dossier backend pour que la fonction puisse importer tes modules
+  included_files = ["backend/**"]
+
+# Si l'URL commence par /api, on appelle ton code FastAPI
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/main"
+  status = 200
+
+# Pour tout le reste, on laisse le frontend gérer (utile pour les Single Page Apps)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
