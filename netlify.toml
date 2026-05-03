@@ -3,7 +3,8 @@
   publish = "frontend"
 
 [functions]
-  directory = "netlify/functions"
+  # On pointe vers le nouveau nom simple
+  directory = "functions"
 
 [[redirects]]
   from = "/api/*"
