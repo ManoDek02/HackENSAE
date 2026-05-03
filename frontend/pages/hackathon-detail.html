@@ -562,10 +562,10 @@
       const d = new Date(isoStr);
       return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
     }
-    
+
     function formatDateRange(iso1, iso2) {
       if (!iso1 && !iso2) return 'Dates à définir';
-      if (!iso1) return 'Jusqu\\'au ' + formatDateStr(iso2);
+      if (!iso1) return 'Jusqu\'au ' + formatDateStr(iso2);
       if (!iso2) return 'À partir du ' + formatDateStr(iso1);
       return formatDateStr(iso1) + ' – ' + formatDateStr(iso2);
     }
@@ -573,7 +573,7 @@
     function renderProgramme() {
       const pAct = H.phase_actuelle || 1;
       let phases = [];
-      
+
       if (isTech) {
         phases = [
           { label: 'Communication', desc: 'Diffusion via affiches, vidéos et groupes WhatsApp.', date: 'Avant ouverture', done: pAct > 1, current: pAct === 1 },
@@ -597,16 +597,16 @@
         ? phases.map((p, i) => {
           const cls = p.done ? 'done' : p.current ? 'current' : '';
           const icon = p.done
-            ? \`<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M2 6l3 3 5-5"/></svg>\`
+            ? `<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M2 6l3 3 5-5"/></svg>`
             : (i + 1);
-          return \`<div class="tl-item">
-          <div class="tl-dot \${cls}">\${icon}</div>
+          return `<div class="tl-item">
+          <div class="tl-dot ${cls}">${icon}</div>
           <div class="tl-body">
-            <h4>\${p.label}\${p.current ? ' <span class="badge badge-blue" style="font-size:0.65rem;padding:1px 7px;vertical-align:middle;margin-left:4px;">En cours</span>' : ''}</h4>
-            <p>\${p.desc}</p>
-            <div class="tl-date">\${p.date}</div>
+            <h4>${p.label}${p.current ? ' <span class="badge badge-blue" style="font-size:0.65rem;padding:1px 7px;vertical-align:middle;margin-left:4px;">En cours</span>' : ''}</h4>
+            <p>${p.desc}</p>
+            <div class="tl-date">${p.date}</div>
           </div>
-        </div>\`;
+        </div>`;
         }).join('')
         : '<p style="color:var(--gray-400);font-size:0.875rem;">Programme à venir.</p>';
     }
