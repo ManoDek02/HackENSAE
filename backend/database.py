@@ -25,29 +25,27 @@ load_dotenv()
 # Format Neon : postgresql://user:pwd@ep-xxx-pooler.region.aws.neon.tech/dbname?sslmode=require
 DATABASE_URL = os.getenv("DATABASE_URL", "")
 
-if not DATABASE_URL:
-    raise ValueError(
-        "DATABASE_URL manquante. "
-        "Copiez votre connection string Neon dans .env\n"
-        "Exemple : DATABASE_URL=postgresql://user:pwd@ep-xxx-pooler.region.aws.neon.tech/neondb?sslmode=require"
-    )
-
 # Neon/Render peuvent fournir postgres:// au lieu de postgresql://
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
 # ── Moteur SQLAlchemy ─────────────────────────────────────────
-# NullPool = pas de pool côté appli → délégué à Neon PgBouncer
-# pool_pre_ping = vérifie la connexion avant chaque requête (important avec scale-to-zero)
-engine = create_engine(
-    DATABASE_URL,
-    poolclass=NullPool,
-    connect_args={"sslmode": "require"},
-    pool_pre_ping=True,
-    echo=os.getenv("DB_ECHO", "false").lower() == "true",
-)
-
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# On n'échoue PAS à l'import si DATABASE_URL est absente :
+# la function Netlify peut démarrer et renvoyer un vrai message d'erreur.
+# L'erreur est levée plus tard, au moment de la première requête DB.
+if DATABASE_URL:
+    engine = create_engine(
+        DATABASE_URL,
+        poolclass=NullPool,
+        connect_args={"sslmode": "require"},
+        pool_pre_ping=True,
+        echo=os.getenv("DB_ECHO", "false").lower() == "true",
+    )
+    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+else:
+    engine = None
+    SessionLocal = None
+    print("[WARNING] DATABASE_URL non définie — les routes DB seront indisponibles.")
 
 
 # ── Dependency FastAPI ────────────────────────────────────────
@@ -60,6 +58,12 @@ def get_db() -> Generator[Session, None, None]:
         def liste(db: Session = Depends(get_db)):
             return db.query(Hackathon).all()
     """
+    from fastapi import HTTPException
+    if SessionLocal is None:
+        raise HTTPException(
+            status_code=503,
+            detail="Base de données non configurée. Vérifiez DATABASE_URL dans les variables d'environnement Netlify."
+        )
     db = SessionLocal()
     try:
         yield db
@@ -84,12 +88,18 @@ def get_db_ctx():
 # ── Création des tables ───────────────────────────────────────
 def create_tables():
     """Crée toutes les tables SQLAlchemy si elles n'existent pas."""
+    if engine is None:
+        print("[WARNING] create_tables() ignoré : DATABASE_URL non définie.")
+        return
     from backend.models.models import Base
     Base.metadata.create_all(bind=engine)
 
 
 # ── Test de connexion (optionnel, utile au démarrage) ─────────
 def test_connection():
+    if engine is None:
+        print("[WARNING] test_connection() ignoré : DATABASE_URL non définie.")
+        return
     try:
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
