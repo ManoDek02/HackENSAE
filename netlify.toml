@@ -3,15 +3,13 @@
   publish = "frontend"
 
 [functions]
-  # On pointe vers la racine du projet pour être sûr de tout inclure
   directory = "netlify/functions"
-  node_bundler = "esbuild" # Optionnel, aide parfois à la stabilité
 
 [[redirects]]
   from = "/api/*"
-  to = "/.netlify/functions/main/api/:splat"
+  to = "/.netlify/functions/main/:splat"
   status = 200
-  force = true  # On force Netlify à ignorer le HTML pour l'API
+  force = true
 
 [[redirects]]
   from = "/*"
