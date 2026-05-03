@@ -8,7 +8,12 @@ async function apiFetch(path, options = {}) {
   const token = Auth.getToken();
   const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
   if (token) headers['Authorization'] = `Bearer ${token}`;
-  const res = await fetch(`/api${path}`, { ...options, headers });
+
+  // On utilise directement le path qui contient déjà /api
+  // ou on s'assure que l'URL est correcte pour Netlify
+  const url = path.startsWith('/api') ? path : `/api${path}`;
+
+  const res = await fetch(url, { ...options, headers });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.detail || `Erreur ${res.status}`);
   return data;
