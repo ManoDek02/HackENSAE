@@ -72,7 +72,9 @@ def login(data: LoginIn, db: Session = Depends(get_db)):
                                   "email": user.email, "prenom": user.prenom, "nom": user.nom})
     return TokenOut(access_token=token, user=UserOut.from_orm(user))
 
+from backend.core.security import get_current_user
+
 @router.get("/me", response_model=UserOut)
-def me(user: Utilisateur = Depends(lambda: None)):
-    """Exemple — injecter get_current_user depuis security.py"""
-    raise HTTPException(status_code=501, detail="Utiliser Depends(get_current_user).")
+def me(current_user: Utilisateur = Depends(get_current_user)):
+    """Retourne les informations de l'utilisateur actuellement connecté."""
+    return UserOut.from_orm(current_user)

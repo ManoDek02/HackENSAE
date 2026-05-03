@@ -9,7 +9,7 @@ from typing import Optional
 from datetime import datetime
 
 from backend.database import get_db
-from backend.models.models import Soumission, Inscription
+from backend.models.models import Soumission, Inscription, Hackathon
 from backend.core.security import get_current_user, require_role
 
 router = APIRouter()
@@ -37,6 +37,11 @@ def soumettre(data: SoumissionIn, db: Session = Depends(get_db),
     ).first()
     if not insc:
         raise HTTPException(status_code=403, detail="Inscription introuvable ou non autorisée.")
+
+    # Vérification que le hackathon est bien en phase de soumission
+    hack = db.query(Hackathon).filter(Hackathon.id == data.hackathon_id).first()
+    if not hack or hack.statut != "soumission":
+        raise HTTPException(status_code=403, detail="La phase de soumission n'est pas ouverte pour ce hackathon.")
     existing = db.query(Soumission).filter(Soumission.inscription_id == data.inscription_id).first()
     if existing:
         existing.lien_repo = data.lien_repo or existing.lien_repo
