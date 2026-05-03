@@ -9,9 +9,9 @@
 
 [[redirects]]
   from = "/api/*"
-  # /main/ fait référence à main.py. Si ton fichier s'appelle api.py, mets /api/
-  to = "/.netlify/functions/main/:splat"
+  to = "/.netlify/functions/main/api/:splat"
   status = 200
+  force = true  # On force Netlify à ignorer le HTML pour l'API
 
 [[redirects]]
   from = "/*"

@@ -48,6 +48,10 @@ async def health():
 # --- GESTION DU FRONTEND ---
 FRONTEND = Path(__file__).parent / "frontend"
 
+@app.get("/test")
+def test():
+    return {"status": "ok"}
+
 @app.get("/", response_class=HTMLResponse)
 async def root():
     index_path = FRONTEND / "index.html"
