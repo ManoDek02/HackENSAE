@@ -3,12 +3,13 @@
   publish = "frontend"
 
 [functions]
-  # On force Netlify à aller chercher main.py à la racine
-  directory = "." 
-  included_files = ["backend/**"]
+  # On pointe vers la racine du projet pour être sûr de tout inclure
+  directory = "netlify/functions"
+  node_bundler = "esbuild" # Optionnel, aide parfois à la stabilité
 
 [[redirects]]
   from = "/api/*"
+  # /main/ fait référence à main.py. Si ton fichier s'appelle api.py, mets /api/
   to = "/.netlify/functions/main/:splat"
   status = 200
 
