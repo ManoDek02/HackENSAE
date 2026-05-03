@@ -3,9 +3,9 @@
 
 [functions]
   directory = "functions"
-  # CRITIQUE : inclure le dossier backend/ dans le bundle de la function
-  # Sans ça, Netlify ne déploie que functions/main.py et l'import de backend.* échoue
-  included_files = ["backend/**", "backend/**/**"]
+  # Copie le dossier backend/ dans le bundle de la function
+  # Sur Netlify/Lambda, backend/ sera au même niveau que main.py
+  included_files = ["backend/**"]
 
 [[redirects]]
   from = "/api/*"

@@ -1,9 +1,19 @@
 import sys
 import os
 
-# ── Chemin vers la racine du projet ──────────────────────────
-# functions/main.py est dans functions/, le projet est à ../
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+# ── Résolution du chemin ──────────────────────────────────────
+# Sur Netlify Functions (AWS Lambda), tous les fichiers inclus
+# via "included_files" sont déployés dans le même répertoire
+# que main.py (/var/task/).
+# On ajoute donc le dossier courant ET le parent en fallback
+# (pour le développement local où backend/ est au niveau racine).
+_here = os.path.dirname(os.path.abspath(__file__))
+_root = os.path.abspath(os.path.join(_here, ".."))
+
+if _here not in sys.path:
+    sys.path.insert(0, _here)   # /var/task/ sur Netlify (backend/ y est copié)
+if _root not in sys.path:
+    sys.path.insert(1, _root)   # racine du projet en local
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -20,7 +30,7 @@ app = FastAPI(
     redoc_url="/api/redoc",
 )
 
-# ── CORS — DOIT être ajouté avant Mangum ─────────────────────
+# ── CORS ──────────────────────────────────────────────────────
 app.add_middleware(
     CORSMiddleware,
     allow_origins=os.getenv("ALLOWED_ORIGINS", "*").split(","),
@@ -42,7 +52,6 @@ async def health():
     return {"status": "ok", "service": "HackENSAE"}
 
 
-# ── Création des tables au premier démarrage ──────────────────
 @app.on_event("startup")
 async def startup():
     try:
@@ -52,7 +61,5 @@ async def startup():
 
 
 # ── Adaptateur Mangum ─────────────────────────────────────────
-# Instancié EN DERNIER, après toute la configuration de l'app.
-# lifespan="off" est nécessaire pour les fonctions serverless
-# (Netlify Functions ne supporte pas les lifespans ASGI).
+# Instancié EN DERNIER — après toute la configuration de l'app.
 handler = Mangum(app, lifespan="off")
