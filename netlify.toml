@@ -1,17 +1,24 @@
 [build]
-  command = "pip install -r requirements.txt"
+  # Installation des dépendances Python pour les Netlify Functions
+  command = "pip install -r requirements.txt --target functions/packages"
   publish = "frontend"
 
 [functions]
-  # On pointe vers le nouveau nom simple
   directory = "functions"
+  # Python 3.9 est la version max supportée nativement par Netlify Functions
+  node_bundler = "esbuild"
 
+# ── Redirection des appels API vers la Netlify Function ───────
+# IMPORTANT : Netlify passe le chemin COMPLET à la function,
+# donc on redirige /api/* directement vers /.netlify/functions/main
+# en préservant le splat (le reste du chemin).
 [[redirects]]
   from = "/api/*"
-  to = "/.netlify/functions/main/:splat"
+  to = "/.netlify/functions/main"
   status = 200
   force = true
 
+# ── SPA fallback — toutes les autres routes → index.html ─────
 [[redirects]]
   from = "/*"
   to = "/index.html"
