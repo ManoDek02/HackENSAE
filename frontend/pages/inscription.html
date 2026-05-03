@@ -201,7 +201,7 @@
      CONFIG : tirée de l'URL (?id=1 ou ?id=2)
   ──────────────────────────────────────────────────────── */
   const urlParams  = new URLSearchParams(window.location.search);
-  const hackId     = parseInt(urlParams.get('id')) || 1;
+  const hackTypeOrId = urlParams.get('type') || urlParams.get('id') || 'tech';
 
   const HACKATHONS = {
     1: {
@@ -255,12 +255,13 @@
     }
   };
 
-  const H = HACKATHONS[hackId] || HACKATHONS[1];
+  const H = Object.values(HACKATHONS).find(h => h.type === hackTypeOrId || h.id == hackTypeOrId) || HACKATHONS[1];
   const isTech = H.type === 'tech';
 
   async function checkHackathonStatus() {
     try {
-      const hackData = await apiFetch(`/hackathons/${H.id}`);
+      const hackData = await apiFetch(`/hackathons/${H.type}`);
+      H.id = hackData.id; // Mise à jour avec le vrai ID de la base de données
       if (!['inscriptions', 'en_cours'].includes(hackData.statut)) {
         document.getElementById('main-page').innerHTML = `
           <div style="padding:var(--space-12) var(--space-8);text-align:center;">

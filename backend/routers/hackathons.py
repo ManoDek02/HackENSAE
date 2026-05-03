@@ -96,9 +96,13 @@ def create_hackathon(data: HackathonCreate, db: Session = Depends(get_db),
     return h
 
 
-@router.get("/{hackathon_id}")
-def get_hackathon(hackathon_id: int, db: Session = Depends(get_db)):
-    h = db.query(Hackathon).filter(Hackathon.id == hackathon_id).first()
+@router.get("/{identifier}")
+def get_hackathon(identifier: str, db: Session = Depends(get_db)):
+    if identifier.isdigit():
+        h = db.query(Hackathon).filter(Hackathon.id == int(identifier)).first()
+    else:
+        h = db.query(Hackathon).filter(Hackathon.type == identifier).first()
+
     if not h:
         raise HTTPException(status_code=404, detail="Hackathon introuvable.")
     nb  = db.query(func.count(Inscription.id)).filter(
