@@ -203,66 +203,39 @@
   const urlParams  = new URLSearchParams(window.location.search);
   const hackTypeOrId = urlParams.get('type') || urlParams.get('id') || 'tech';
 
-  const HACKATHONS = {
-    1: {
-      id: 1,
-      type: 'tech',
-      titre: 'Tech & Data Innovation 2025',
-      organisateur: 'Club Informatique ENSAE · Bureau des Statistiques AES',
-      statut: 'inscriptions',
-      taille_max: 4,
-      phase_label: 'Inscriptions',
-      deadline_inscriptions: '10 avr. 2025',
-      deadline_soumission:   '10 mai 2025',
-      deadline_formation:    '15 avr. 2025',
-      deadline_jury:         '15 mai 2025',
-      domaines: ['Agriculture', 'Santé', 'Education', 'Finance', 'Environnement', 'Entreprise'],
-      livrables: ['Application web', 'Application mobile', 'Dashboard interactif', 'Modèle prédictif + API', 'Outil d\'analyse', 'Autre prototype'],
-      competences: ['Python', 'R', 'SQL', 'Web dev', 'IA / ML', 'Data viz'],
-      regles: [
-        '1 à 4 membres par équipe, étudiants ENSAE',
-        'Le livrable doit être un prototype fonctionnel',
-        'Code source soumis via un repository public',
-        'Démonstration live (pitch) obligatoire',
-        'Poster scientifique requis avec le projet'
-      ],
-      heroBg: 'var(--blue-900)',
-      headerBadge: 'Inscriptions ouvertes'
-    },
-    2: {
-      id: 2,
-      type: 'datajournalisme',
-      titre: 'Datajournalisme 2026',
-      organisateur: 'Club Presse ENSAE',
-      statut: 'a_venir',
-      taille_max: 3,
-      phase_label: 'Communication',
-      deadline_inscriptions: 'Début mois stat.',
-      deadline_soumission:   'Fin mois stat.',
-      deadline_jury:         'Après clôture',
-      thematiques: ['Le climat', 'L\'éducation', 'Conséquences d\'une guerre', 'La santé', 'Conditions de vie des enfants', 'L\'économie générale', 'La finance'],
-      prix: [{ rang: '1er prix', montant: '50 000 FCFA' }, { rang: '2e prix', montant: '35 000 FCFA' }],
-      jury: ['M. Mamadou Diop', 'M. Jean Pierre Adiouma Ndiaye', 'Mme Iphygénie Sarr'],
-      regles: [
-        '1 à 3 membres par équipe, étudiants ENSAE',
-        'Une thématique imposée parmi les 7 sujets',
-        'Livrable : article web, vidéo ou reportage vocal',
-        'Rapport PDF de démarche d\'analyse obligatoire',
-        'Le lien soumis doit rester public pendant l\'évaluation'
-      ],
-      heroBg: '#085041',
-      headerBadge: 'Lancement imminent'
-    }
-  };
+  let H = null;
+  let isTech = true;
 
-  const H = Object.values(HACKATHONS).find(h => h.type === hackTypeOrId || h.id == hackTypeOrId) || HACKATHONS[1];
-  const isTech = H.type === 'tech';
+  function formatDateStr(isoStr) {
+    if (!isoStr) return 'Date à définir';
+    const d = new Date(isoStr);
+    return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
 
   async function checkHackathonStatus() {
     try {
-      const hackData = await apiFetch(`/hackathons/${H.type}`);
-      H.id = hackData.id; // Mise à jour avec le vrai ID de la base de données
-      if (!['inscriptions', 'en_cours'].includes(hackData.statut)) {
+      const hackData = await apiFetch(`/hackathons/${hackTypeOrId}`);
+      H = hackData;
+      isTech = H.type === 'tech';
+      
+      // Adaptations des données pour le template existant
+      H.taille_max = H.taille_equipe_max || 4;
+      H.domaines = H.config?.domaines || [];
+      H.thematiques = H.config?.thematiques || [];
+      H.livrables = H.config?.livrables || [];
+      H.competences = H.config?.competences || [];
+      H.regles = H.config?.regles || [];
+      H.jury = H.config?.jury || [];
+      H.prix = H.config?.prix || [];
+      H.heroBg = isTech ? 'var(--blue-900)' : '#085041';
+      H.headerBadge = H.statut === 'inscriptions' ? 'Inscriptions ouvertes' : (H.statut === 'en_cours' ? 'En cours' : 'Fermé');
+
+      H.deadline_inscriptions = formatDateStr(H.date_fin_inscriptions);
+      H.deadline_soumission   = formatDateStr(H.date_soumission);
+      H.deadline_jury         = formatDateStr(H.date_evaluation);
+      H.deadline_formation    = formatDateStr(H.date_formation); // Peut être non défini
+
+      if (!['inscriptions', 'en_cours'].includes(H.statut)) {
         document.getElementById('main-page').innerHTML = `
           <div style="padding:var(--space-12) var(--space-8);text-align:center;">
             <div style="font-size:2rem;margin-bottom:var(--space-4);">🔒</div>
@@ -280,26 +253,28 @@
   }
 
   /* ── Render hero ───────────────────────────────────────── */
-  document.getElementById('hero-area').innerHTML = `
-    <div style="background:${H.heroBg};padding:var(--space-8) var(--space-8) var(--space-6);position:relative;overflow:hidden;">
-      <div style="position:absolute;right:-60px;top:-60px;width:260px;height:260px;border-radius:50%;background:rgba(255,255,255,0.04);"></div>
-      <div style="position:relative;z-index:1;">
-        <span class="badge ${isTech ? 'badge-blue' : 'badge-green'}" style="margin-bottom:var(--space-3);display:inline-flex;">${H.headerBadge}</span>
-        <h1 style="color:var(--white);font-size:1.5rem;margin-bottom:4px;">${H.titre}</h1>
-        <p style="color:${isTech ? 'var(--blue-200)' : 'rgba(159,225,203,0.9)'};font-size:0.875rem;">${H.organisateur}</p>
-        <div class="hero-banner__meta" style="margin-top:var(--space-5);">
-          <div class="hero-meta-item">
-            <span class="hero-meta-item__label">Équipe</span>
-            <span class="hero-meta-item__value">1 à ${H.taille_max} membres</span>
-          </div>
-          <div class="hero-meta-item">
-            <span class="hero-meta-item__label">Livrable</span>
-            <span class="hero-meta-item__value">${isTech ? 'Prototype + repo' : 'Article / vidéo / vocal'}</span>
+  function renderHero() {
+    document.getElementById('hero-area').innerHTML = `
+      <div style="background:${H.heroBg};padding:var(--space-8) var(--space-8) var(--space-6);position:relative;overflow:hidden;">
+        <div style="position:absolute;right:-60px;top:-60px;width:260px;height:260px;border-radius:50%;background:rgba(255,255,255,0.04);"></div>
+        <div style="position:relative;z-index:1;">
+          <span class="badge ${isTech ? 'badge-blue' : 'badge-green'}" style="margin-bottom:var(--space-3);display:inline-flex;">${H.headerBadge}</span>
+          <h1 style="color:var(--white);font-size:1.5rem;margin-bottom:4px;">${H.titre}</h1>
+          <p style="color:${isTech ? 'var(--blue-200)' : 'rgba(159,225,203,0.9)'};font-size:0.875rem;">${H.organisateur}</p>
+          <div class="hero-banner__meta" style="margin-top:var(--space-5);">
+            <div class="hero-meta-item">
+              <span class="hero-meta-item__label">Équipe</span>
+              <span class="hero-meta-item__value">1 à ${H.taille_max} membres</span>
+            </div>
+            <div class="hero-meta-item">
+              <span class="hero-meta-item__label">Livrable</span>
+              <span class="hero-meta-item__value">${isTech ? 'Prototype + repo' : 'Article / vidéo / vocal'}</span>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  `;
+    `;
+  }
 
   /* ── Render steps ──────────────────────────────────────── */
   const STEPS = ['Informations équipe', 'Membres', isTech ? 'Projet & domaine' : 'Thématique & livrable', 'Confirmation'];
@@ -318,12 +293,12 @@
 
   /* ── Form state ────────────────────────────────────────── */
   const state = {
-    equipe: '', email_contact: '', nb_membres: isTech ? 4 : 3,
+    equipe: '', email_contact: '', nb_membres: 1, // par défaut
     membres: [],
-    domaine: isTech ? H.domaines[0] : null,
-    thematique: !isTech ? H.thematiques[0] : null,
-    livrable_type: !isTech ? 'article' : null,
-    livrable_format: isTech ? H.livrables[0] : null,
+    domaine: null,
+    thematique: null,
+    livrable_type: null,
+    livrable_format: null,
     description: '',
     livrable_lien: '',
   };
@@ -692,11 +667,25 @@
   }
 
   /* ── Init ────────────────────────────────────────────────*/
-  document.title = `Inscription — ${H.titre} · HackENSAE`;
-  renderSteps();
-  renderStep1();
-  renderSidebar();
-  checkHackathonStatus();
+  async function init() {
+    await checkHackathonStatus();
+    if (!H) return; // if error in fetch
+    
+    // Initialisation du form state après le chargement
+    state.nb_membres = H.taille_max;
+    state.domaine = isTech ? (H.domaines[0] || null) : null;
+    state.thematique = !isTech ? (H.thematiques[0] || null) : null;
+    state.livrable_type = !isTech ? 'article' : null;
+    state.livrable_format = isTech ? (H.livrables[0] || null) : null;
+
+    document.title = `Inscription — ${H.titre} · HackENSAE`;
+    renderHero();
+    renderSteps();
+    renderStep1();
+    renderSidebar();
+  }
+  
+  init();
   </script>
 </body>
 </html>
