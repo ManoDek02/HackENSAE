@@ -139,3 +139,15 @@ class Soumission(Base):
     hackathon   = relationship("Hackathon",    back_populates="soumissions")
     inscription = relationship("Inscription",  back_populates="soumission")
     soumetteur  = relationship("Utilisateur",  back_populates="soumissions")
+
+# ── Messages Contact ──────────────────────────────────────────
+class MessageContact(Base):
+    __tablename__ = "messages_contact"
+
+    id         = Column(Integer, primary_key=True, index=True)
+    nom        = Column(String(200), nullable=False)
+    email      = Column(String(255), nullable=False)
+    sujet      = Column(String(150), nullable=False)
+    message    = Column(Text, nullable=False)
+    lu         = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)

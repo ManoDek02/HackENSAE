@@ -102,6 +102,9 @@
           <div class="dl" onclick="showS('phases')">
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="6.5"/><polyline points="8 4.5 8 8 10.5 10"/></svg>Phases
           </div>
+          <div class="dl" onclick="showS('messages')">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 4h12v8H2z"/><path d="M2 4l6 4 6-4"/></svg>Messages<span class="cnt" id="cnt-msg">0</span>
+          </div>
           <div style="border-top:1px solid var(--blue-800);margin:var(--space-2) 0;"></div>
           <div class="dl" onclick="window.location.href='../index.html'">
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M10 3H13a1 1 0 011 1v9a1 1 0 01-1 1H3a1 1 0 01-1-1V4a1 1 0 011-1h3"/><polyline points="6 8 8 10 10 8"/><line x1="8" y1="3" x2="8" y2="10"/></svg>Vue publique
@@ -207,6 +210,20 @@
           </div>
           <div id="phase-card" style="background:var(--blue-25);border:1px solid var(--blue-100);border-radius:var(--radius-lg);padding:var(--space-5) var(--space-6);"></div>
         </div>
+
+        <!-- Messages -->
+        <div id="s-messages" class="hidden">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-6);">
+            <div><p class="section-eyebrow">Contact</p><h2 style="color:var(--blue-900);">Messages reçus</h2></div>
+            <button class="btn btn-outline btn-sm" onclick="loadMessages()">Actualiser</button>
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead><tr><th>Date</th><th>Expéditeur</th><th>Sujet</th><th>Message</th><th>Actions</th></tr></thead>
+              <tbody id="tb-messages"></tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -237,8 +254,8 @@ const PHASES_DATAJ = [
 ];
 
 /* ── Navigation ──────────────────────────────────────────── */
-// Dans le tableau SS, ajouter 'modifier'
-const SS = ['apercu','creer','equipes','soumissions','phases','modifier'];
+// Dans le tableau SS, ajouter 'modifier' et 'messages'
+const SS = ['apercu','creer','equipes','soumissions','phases','modifier','messages'];
 
 // Nouvelle fonction à ajouter
 async function initModifyForm() {
@@ -420,8 +437,16 @@ async function nextPhase() {
     toast('Phase avancée : '+getPhases()[HACK.phase_actuelle-1].label,'success');
   } catch(err){ toast(err.message,'error'); }
 }
-function prevPhase() {
-  if (HACK.phase_actuelle > 1) { HACK.phase_actuelle--; refreshPhases(); }
+async function prevPhase() {
+  if (HACK.phase_actuelle > 1) {
+    if (!HACK.id) return;
+    try {
+      const res = await apiFetch(`/hackathons/${HACK.id}/phase?nouvelle_phase=${HACK.phase_actuelle-1}`,{method:'PATCH'});
+      HACK.phase_actuelle = res.phase_actuelle;
+      refreshPhases();
+      toast('Phase précédente : '+getPhases()[HACK.phase_actuelle-1].label,'info');
+    } catch(err){ toast(err.message,'error'); }
+  }
 }
 
 /* ── Sélecteur de hackathon ──────────────────────────────── */
@@ -470,6 +495,7 @@ async function loadHackData(hackId) {
     refreshPhases();
     renderInscriptions();
     renderSoumissions();
+    loadMessages();
   } catch(err) {
     toast('Erreur de chargement : ' + err.message, 'error');
   }
@@ -572,6 +598,58 @@ function exportCSV(){
   a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
   a.download='equipes.csv'; a.click();
   toast('Export CSV téléchargé.','success');
+}
+
+/* ── Messages de Contact ─────────────────────────────────── */
+let MESSAGES = [];
+async function loadMessages() {
+  try {
+    MESSAGES = await apiFetch('/contact');
+    renderMessages();
+  } catch(err) {
+    console.error('Erreur chargement messages', err);
+  }
+}
+function renderMessages() {
+  const tbody = document.getElementById('tb-messages');
+  const cnt = document.getElementById('cnt-msg');
+  if (!tbody || !cnt) return;
+  
+  const unread = MESSAGES.filter(m => !m.lu).length;
+  cnt.textContent = unread;
+  
+  if (!MESSAGES.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--gray-400);padding:20px;">Aucun message reçu.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = MESSAGES.map(m => {
+    const date = new Date(m.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+    const bg = m.lu ? 'transparent' : 'var(--blue-25)';
+    const fw = m.lu ? 'normal' : '500';
+    return `<tr style="background:${bg};">
+      <td style="font-size:0.8125rem; color:var(--gray-500);">${date}</td>
+      <td>
+        <div style="font-weight:${fw}; color:var(--gray-900);">${m.nom}</div>
+        <div style="font-size:0.75rem; color:var(--blue-600);">${m.email}</div>
+      </td>
+      <td style="font-weight:${fw};">${m.sujet}</td>
+      <td style="font-size:0.875rem; max-width:300px; white-space:normal;">${m.message}</td>
+      <td>
+        <button class="btn btn-outline btn-sm" onclick="toggleLu(${m.id})">${m.lu ? 'Marquer non lu' : 'Marquer lu'}</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+async function toggleLu(id) {
+  try {
+    const res = await apiFetch('/contact/' + id + '/lu', { method: 'PATCH' });
+    const msg = MESSAGES.find(m => m.id === id);
+    if (msg) msg.lu = res.lu;
+    renderMessages();
+  } catch(err) {
+    toast(err.message, 'error');
+  }
 }
 
 /* ── Formulaire création hackathon ───────────────────────── */

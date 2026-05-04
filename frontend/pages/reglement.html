@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Règlement — HackENSAE</title>
+  <link rel="stylesheet" href="../css/design-system.css?v=1.1" />
+  <style>
+    .reglement-hero {
+      background: var(--blue-950);
+      padding: var(--space-12) 0 var(--space-10);
+      position: relative;
+      overflow: hidden;
+      color: var(--white);
+      text-align: center;
+      border-bottom: 1px solid var(--blue-800);
+    }
+
+    .reglement-hero::after {
+      content: '';
+      position: absolute;
+      top: -50px;
+      right: 10%;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--blue-800) 0%, transparent 70%);
+      opacity: 0.5;
+    }
+
+    .reglement-hero__inner {
+      position: relative;
+      z-index: 1;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .reglement-hero h1 {
+      margin-bottom: var(--space-2);
+    }
+
+    .reglement-hero p {
+      color: var(--blue-300);
+      font-size: 1.05rem;
+    }
+
+    .docs-layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: var(--space-12);
+      align-items: start;
+      padding-block: var(--space-10);
+    }
+
+    @media (max-width: 860px) {
+      .docs-layout {
+        grid-template-columns: 1fr;
+        gap: var(--space-6);
+      }
+
+      .docs-sidebar {
+        display: none;
+      }
+    }
+
+    .docs-sidebar {
+      position: sticky;
+      top: calc(var(--nav-height) + var(--space-6));
+      background: var(--gray-50);
+      padding: var(--space-5);
+      border-radius: var(--radius-lg);
+      border: var(--border-light);
+    }
+
+    .docs-sidebar h3 {
+      font-size: 0.8125rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--gray-500);
+      margin-bottom: var(--space-3);
+    }
+
+    .docs-sidebar ul {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .docs-sidebar a {
+      font-size: 0.9rem;
+      color: var(--gray-700);
+      transition: color var(--transition);
+      display: block;
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+      margin-left: -8px;
+    }
+
+    .docs-sidebar a:hover,
+    .docs-sidebar a.active {
+      color: var(--blue-700);
+      background: var(--blue-50);
+      font-weight: 500;
+    }
+
+    .docs-content {
+      max-width: 760px;
+    }
+
+    .docs-content section {
+      margin-bottom: var(--space-12);
+      scroll-margin-top: calc(var(--nav-height) + var(--space-6));
+    }
+
+    .docs-content h2 {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      color: var(--blue-900);
+      margin-bottom: var(--space-4);
+      padding-bottom: var(--space-2);
+      border-bottom: 2px solid var(--blue-50);
+    }
+
+    .docs-content h3 {
+      font-size: 1.25rem;
+      color: var(--blue-800);
+      margin-top: var(--space-6);
+      margin-bottom: var(--space-3);
+    }
+
+    .docs-content p,
+    .docs-content li {
+      color: var(--gray-700);
+      font-size: 1.05rem;
+      line-height: 1.75;
+      margin-bottom: var(--space-3);
+    }
+
+    .docs-content ul {
+      list-style-type: disc;
+      padding-left: var(--space-6);
+      margin-bottom: var(--space-4);
+    }
+
+    .docs-content li {
+      margin-bottom: 8px;
+    }
+
+    .docs-content .highlight {
+      background: var(--blue-25);
+      border-left: 4px solid var(--blue-500);
+      padding: var(--space-4) var(--space-5);
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      margin: var(--space-5) 0;
+      color: var(--blue-900);
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <nav class="navbar">
+      <div class="container navbar__inner">
+        <a href="../index.html" class="navbar__logo">
+          <div class="navbar__logo-mark">
+            <svg viewBox="0 0 18 18" fill="none">
+              <path d="M3 14L9 4L15 14" stroke="white" stroke-width="1.8" stroke-linecap="round"
+                stroke-linejoin="round" />
+              <path d="M5.5 10H12.5" stroke="white" stroke-width="1.8" stroke-linecap="round" />
+            </svg>
+          </div>
+          <span class="navbar__logo-text">HackENSAE</span>
+        </a>
+        <div class="navbar__links">
+          <a href="../index.html" class="navbar__link">Hackathons</a>
+          <a href="mon-espace.html" class="navbar__link">Mon espace</a>
+          <a href="resultats.html" class="navbar__link">Résultats</a>
+        </div>
+        <div class="navbar__actions"></div>
+      </div>
+    </nav>
+  </header>
+
+  <section class="reglement-hero">
+    <div class="container">
+      <div class="reglement-hero__inner">
+        <h1 class="display-lg" style="color: var(--white)">Règlement Général</h1>
+        <p>Prenez connaissance des règles applicables à toutes les compétitions HackENSAE.</p>
+      </div>
+    </div>
+  </section>
+
+  <main class=" container">
+    <div class="docs-layout">
+      <!-- Sommaire -->
+      <aside class="docs-sidebar">
+        <h3>Sommaire</h3>
+        <ul>
+          <li><a href="#participation" class="toc-link active">1. Participation</a></li>
+          <li><a href="#equipes" class="toc-link">2. Formation des équipes</a></li>
+          <li><a href="#deroulement" class="toc-link">3. Déroulement</a></li>
+          <li><a href="#soumission" class="toc-link">4. Soumission des projets</a></li>
+          <li><a href="#evaluation" class="toc-link">5. Évaluation et Jury</a></li>
+          <li><a href="#pi" class="toc-link">6. Propriété Intellectuelle</a></li>
+          <li><a href="#sanctions" class="toc-link">7. Sanctions</a></li>
+        </ul>
+      </aside>
+
+      <!-- Contenu -->
+      <div class="docs-content">
+        <section id="participation">
+          <h2>1. Participation</h2>
+          <p>La participation aux hackathons organisés sur la plateforme HackENSAE est ouverte à tous les
+            étudiants
+            régulièrement inscrits à l'ENSAE Dakar pour l'année universitaire en cours, sauf mention contraire
+            précisée
+            dans le règlement spécifique d'un hackathon donné.</p>
+          <div class="highlight">
+            <p><strong>Note :</strong> L'inscription sur la plateforme est obligatoire pour participer. Toute
+              personne
+              non inscrite officiellement ne pourra ni contribuer au projet final ni prétendre à une récompense.
+            </p>
+          </div>
+        </section>
+
+        <section id="equipes">
+          <h2>2. Formation des équipes</h2>
+          <p>Les compétitions se déroulent par équipes. Les conditions de formation sont les suivantes :</p>
+          <ul>
+            <li>La taille de l'équipe (minimum et maximum) est définie sur la page de chaque hackathon.</li>
+            <li>Une personne ne peut faire partie que d'<strong>une seule équipe</strong> par hackathon.</li>
+            <li>Le chef d'équipe (celui qui crée l'équipe sur la plateforme) est le point de contact principal
+              avec
+              l'organisation.</li>
+            <li>Les changements de membres d'équipe ne sont autorisés que pendant la phase
+              d'<strong>Inscriptions</strong>. Une fois cette phase clôturée, la composition de l'équipe est
+              définitive.
+            </li>
+          </ul>
+        </section>
+
+        <section id="deroulement">
+          <h2>3. Déroulement</h2>
+          <p>Chaque compétition suit un cycle de vie en plusieurs phases (Communication, Inscriptions,
+            Développement/Production, Soumission, Évaluation). Les dates limites de chaque phase sont strictes.
+          </p>
+          <h3>Utilisation des ressources</h3>
+          <p>Les participants sont libres d'utiliser les langages de programmation, frameworks et librairies open
+            source
+            de leur choix, sauf restriction explicite. L'utilisation d'outils d'intelligence artificielle
+            générative
+            (ChatGPT, Copilot) est autorisée mais doit être déclarée dans le code ou le rapport.</p>
+        </section>
+
+        <section id="soumission">
+          <h2>4. Soumission des projets</h2>
+          <p>La phase de soumission est l'étape cruciale pour valider votre travail. Vous devez :</p>
+          <ul>
+            <li>Soumettre un lien valide vers le livrable (Repository GitHub/GitLab, URL de l'application
+              déployée, lien
+              Google Drive pour le datajournalisme, etc.).</li>
+            <li>Vous assurer que les accès aux liens soumis sont publics ou partagés avec les emails des
+              organisateurs.
+            </li>
+            <li>Soumettre avant l'heure de clôture exacte. <strong>Aucun projet ne sera accepté après la
+                deadline.</strong></li>
+          </ul>
+        </section>
+
+        <section id="evaluation">
+          <h2>5. Évaluation et Jury</h2>
+          <p>Les projets sont évalués par un jury souverain composé d'experts techniques, de professeurs de
+            l'ENSAE
+            et/ou de professionnels de l'industrie.</p>
+          <p>Les critères généraux d'évaluation incluent (sans s'y limiter) :</p>
+          <ul>
+            <li><strong>L'innovation et l'originalité</strong> de la solution proposée.</li>
+            <li><strong>L'impact potentiel</strong> et la pertinence par rapport à la thématique choisie.</li>
+            <li><strong>La qualité technique</strong> (robustesse du code, architecture, design).</li>
+            <li><strong>La présentation finale</strong> (pitch devant le jury ou qualité du rapport écrit).</li>
+          </ul>
+        </section>
+
+        <section id="pi">
+          <h2>6. Propriété Intellectuelle</h2>
+          <p>Les projets créés dans le cadre des hackathons restent la propriété intellectuelle exclusive de leurs
+            créateurs (les membres de l'équipe). Toutefois, en participant, les équipes autorisent l'ENSAE Dakar
+            et les
+            clubs organisateurs à citer leurs noms et présenter brièvement leurs projets à des fins de
+            communication
+            (site web, réseaux sociaux, plaquettes de présentation).</p>
+        </section>
+
+        <section id="sanctions">
+          <h2>7. Sanctions</h2>
+          <p>Tout comportement jugé anti-jeu, frauduleux ou non respectueux du règlement entraînera la
+            disqualification
+            immédiate de l'équipe concernée. Cela inclut :</p>
+          <ul>
+            <li>Le plagiat pur et simple d'un projet existant.</li>
+            <li>Le sabotage des outils ou des projets d'autres équipes.</li>
+            <li>Le non-respect du code de conduite de l'ENSAE Dakar (respect, inclusion, courtoisie).</li>
+          </ul>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-inner">
+        <span class="footer-logo">HackENSAE</span>
+        <span class="footer-credits">Club Informatique &amp; Club Presse · ENSAE Dakar · 2025</span>
+        <div class="footer-links"><a href="contact.html">Contact</a><a href="reglement.html">Règlement</a><a
+            href="login.html?role=organisateur">Organisateurs</a></div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../js/utils.js"></script>
+  <script>
+    // Smooth scroll and active state updates
+    const observerOptions = {
+      root: null,
+      rootMargin: '-20% 0px -60% 0px',
+      threshold: 0
+    };
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.getAttribute('id');
+          document.querySelectorAll('.toc-link').forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === '#' + id) {
+              link.classList.add('active');
+            }
+          });
+        }
+      });
+    }, observerOptions);
+
+    document.querySelectorAll('.docs-content section').forEach(section => {
+      observer.observe(section);
+    });
+
+    // Initial Navbar fix to hide actions if not logged in, but utils.js handles it
+  </script>
+</body>
+
+</html>

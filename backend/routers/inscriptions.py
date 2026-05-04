@@ -149,3 +149,30 @@ def changer_statut(inscription_id: int, statut: str, db: Session = Depends(get_d
         raise HTTPException(status_code=404, detail="Inscription introuvable.")
     insc.statut = statut; db.commit()
     return {"message": f"Statut mis à jour : {statut}"}
+
+class UpdateMembresIn(BaseModel):
+    membres: List[MembreIn]
+
+@router.patch("/{inscription_id}/membres", response_model=InscriptionOut)
+def update_membres(inscription_id: int, data: UpdateMembresIn, db: Session = Depends(get_db),
+                   current_user=Depends(get_current_user)):
+    insc = db.query(Inscription).filter(
+        Inscription.id == inscription_id,
+        Inscription.chef_id == current_user.id
+    ).first()
+    if not insc:
+        raise HTTPException(status_code=404, detail="Inscription introuvable ou vous n'êtes pas le chef d'équipe.")
+    
+    # Check if hackathon is still in inscriptions phase
+    hack = db.query(Hackathon).filter(Hackathon.id == insc.hackathon_id).first()
+    if hack and hack.statut != "inscriptions":
+        raise HTTPException(status_code=403, detail="Les inscriptions sont fermées, vous ne pouvez plus modifier votre équipe.")
+        
+    nb = len([m for m in data.membres if m.nom.strip()])
+    if hack and nb > hack.taille_equipe_max:
+        raise HTTPException(status_code=400, detail=f"Maximum {hack.taille_equipe_max} membres pour ce hackathon.")
+        
+    insc.membres = [m.dict() for m in data.membres]
+    db.commit()
+    db.refresh(insc)
+    return insc

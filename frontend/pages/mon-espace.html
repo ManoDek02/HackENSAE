@@ -347,6 +347,18 @@
               <span class="badge badge-green" id="equipe-statut-badge">—</span>
             </div>
             <div id="membres-list"></div>
+            <div id="membres-edit-area" style="display:none; margin-top:var(--space-4); padding-top:var(--space-4); border-top:1px solid var(--gray-100);">
+              <h4 style="font-size:0.9rem; color:var(--blue-900); margin-bottom:var(--space-3);">Gérer les membres</h4>
+              <div id="edit-membres-list" style="display:flex; flex-direction:column; gap:var(--space-2); margin-bottom:var(--space-4);"></div>
+              <button class="btn btn-secondary btn-sm" onclick="addMembreInput()">+ Ajouter un membre</button>
+              <div style="margin-top:var(--space-4); display:flex; gap:var(--space-2); justify-content:flex-end;">
+                <button class="btn btn-outline btn-sm" onclick="toggleEditMembres(false)">Annuler</button>
+                <button class="btn btn-primary btn-sm" onclick="saveMembres()" id="btn-save-membres">Enregistrer</button>
+              </div>
+            </div>
+            <div style="margin-top:var(--space-4); text-align:right;">
+              <button id="btn-edit-equipe" class="btn btn-outline btn-sm" style="display:none;" onclick="toggleEditMembres(true)">Modifier l'équipe</button>
+            </div>
           </div>
           <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:var(--space-5) var(--space-6);">
             <h3 style="font-size:0.9rem;color:var(--blue-900);margin-bottom:var(--space-4);">Détails de l'inscription</h3>
@@ -516,6 +528,84 @@ function renderMembres() {
   }).join('') || '<p style="color:var(--gray-400);font-size:0.875rem;">Aucun membre renseigné.</p>';
 }
 
+let editMembresData = [];
+
+function toggleEditMembres(show) {
+  const listArea = document.getElementById('membres-list');
+  const editArea = document.getElementById('membres-edit-area');
+  const btnEdit = document.getElementById('btn-edit-equipe');
+  
+  if (show) {
+    listArea.style.display = 'none';
+    editArea.style.display = 'block';
+    btnEdit.style.display = 'none';
+    // Deep copy current members
+    editMembresData = JSON.parse(JSON.stringify(INSCRIPTION.membres || []));
+    renderEditMembresList();
+  } else {
+    listArea.style.display = 'block';
+    editArea.style.display = 'none';
+    btnEdit.style.display = 'inline-block';
+  }
+}
+
+function renderEditMembresList() {
+  const container = document.getElementById('edit-membres-list');
+  container.innerHTML = editMembresData.map((m, i) => `
+    <div style="display:flex; gap:var(--space-2); align-items:flex-start;">
+      <div style="flex:1;">
+        <input type="text" class="form-control" value="${m.nom || ''}" placeholder="Nom et prénom" oninput="editMembresData[${i}].nom=this.value" ${i===0?'disabled':''} style="${i===0?'background:var(--gray-50);':''}"/>
+      </div>
+      <div style="flex:1;">
+        <input type="text" class="form-control" value="${m.filiere || ''}" placeholder="Filière (ex: ISE 1)" oninput="editMembresData[${i}].filiere=this.value" />
+      </div>
+      ${i > 0 ? `<button class="btn btn-outline" style="padding:10px; color:var(--error-dark); border-color:var(--error-light);" onclick="removeMembreInput(${i})">X</button>` : `<div style="width:40px;"></div>`}
+    </div>
+  `).join('');
+}
+
+function addMembreInput() {
+  const max = HACKATHON?.taille_equipe_max || 4;
+  if (editMembresData.length >= max) {
+    toast(`Ce hackathon est limité à ${max} membres maximum.`, 'warning');
+    return;
+  }
+  editMembresData.push({ nom: '', filiere: '' });
+  renderEditMembresList();
+}
+
+function removeMembreInput(index) {
+  if (index === 0) return;
+  editMembresData.splice(index, 1);
+  renderEditMembresList();
+}
+
+async function saveMembres() {
+  const btn = document.getElementById('btn-save-membres');
+  btn.disabled = true;
+  btn.textContent = 'Enregistrement...';
+  
+  // Filter empty names
+  const validMembres = editMembresData.filter(m => m.nom.trim() !== '');
+  
+  try {
+    const updated = await apiFetch('/inscriptions/' + INSCRIPTION.id + '/membres', {
+      method: 'PATCH',
+      body: JSON.stringify({ membres: validMembres })
+    });
+    INSCRIPTION.membres = updated.membres;
+    toast('Équipe mise à jour avec succès.', 'success');
+    renderMembres();
+    toggleEditMembres(false);
+    document.getElementById('stat-membres').textContent = INSCRIPTION.membres.length;
+  } catch (err) {
+    toast(err.message || 'Erreur lors de la mise à jour.', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Enregistrer';
+  }
+}
+
 /* ── Render soumission ───────────────────────────────────── */
 function renderSoumission() {
   const zone = document.getElementById('soumission-content');
@@ -575,7 +665,7 @@ async function submitProject() {
   if (!lien) { toast('Veuillez renseigner le lien du livrable.','error'); return; }
   if (!INSCRIPTION?.id) { toast('Inscription introuvable.','error'); return; }
   try {
-    const isTech = INSCRIPTION.type === 'tech';
+    const isTech = HACKATHON.type === 'tech';
     await apiFetch('/soumissions', {
       method:'POST',
       body: JSON.stringify({
@@ -697,6 +787,14 @@ async function init() {
       if (soumBadge) {
         soumBadge.className  = HACKATHON.statut==='soumission'?'badge badge-green':'badge badge-amber';
         soumBadge.textContent= HACKATHON.statut==='soumission'?'Soumissions ouvertes':'En attente';
+      }
+
+      // Allow editing team only if hackathon is in inscriptions phase
+      const btnEdit = document.getElementById('btn-edit-equipe');
+      if (btnEdit && HACKATHON.statut === 'inscriptions') {
+        btnEdit.style.display = 'inline-block';
+      } else if (btnEdit) {
+        btnEdit.style.display = 'none';
       }
 
       renderMembres();

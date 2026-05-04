@@ -668,6 +668,8 @@
 
   /* ── Init ────────────────────────────────────────────────*/
   async function init() {
+    if (!Auth.requireLogin('./login.html')) return;
+    
     await checkHackathonStatus();
     if (!H) return; // if error in fetch
     

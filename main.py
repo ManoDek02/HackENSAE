@@ -7,7 +7,7 @@ from fastapi.responses import HTMLResponse, FileResponse
 
 # Initialisation
 from backend.database import create_tables
-from backend.routers import hackathons, inscriptions, auth, soumissions, organisateurs
+from backend.routers import hackathons, inscriptions, auth, soumissions, organisateurs, contact
 
 app = FastAPI(
     title="HackENSAE API",
@@ -31,6 +31,7 @@ app.include_router(hackathons.router,     prefix="/api/hackathons",    tags=["Ha
 app.include_router(inscriptions.router,   prefix="/api/inscriptions",  tags=["Inscriptions"])
 app.include_router(soumissions.router,    prefix="/api/soumissions",   tags=["Soumissions"])
 app.include_router(organisateurs.router,  prefix="/api/organisateurs", tags=["Organisateurs"])
+app.include_router(contact.router,        prefix="/api/contact",       tags=["Contact"])
 
 @app.get("/api/health")
 async def health():
