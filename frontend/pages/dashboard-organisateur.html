@@ -485,7 +485,7 @@ async function loadHackData(hackId) {
 
     const set = (id, val) => { const el=document.getElementById(id); if(el) el.textContent=val; };
     set('m-equipes',      dash.nb_inscrits    || 0);
-    set('m-participants', (dash.nb_inscrits||0)*3);
+    set('m-participants', dash.nb_participants|| 0);
     set('m-soumissions',  dash.nb_soumissions || 0);
     set('m-evalues',      dash.nb_evalues     || 0);
     set('apercu-titre',   hack.titre || '');

@@ -18,8 +18,11 @@ def dashboard(hackathon_id: int, db: Session = Depends(get_db),
     h = db.query(Hackathon).filter(Hackathon.id == hackathon_id).first()
     if not h:
         raise HTTPException(status_code=404, detail="Hackathon introuvable.")
-    nb_inscrits = db.query(func.count(Inscription.id)).filter(
-        Inscription.hackathon_id == hackathon_id, Inscription.statut=="validee").scalar() or 0
+    inscr_validees = db.query(Inscription).filter(
+        Inscription.hackathon_id == hackathon_id, Inscription.statut=="validee").all()
+    nb_inscrits = len(inscr_validees)
+    nb_participants = sum(len(i.membres) if isinstance(i.membres, list) else 0 for i in inscr_validees)
+    
     nb_attente = db.query(func.count(Inscription.id)).filter(
         Inscription.hackathon_id == hackathon_id, Inscription.statut=="en_attente").scalar() or 0
     nb_soum = db.query(func.count(Soumission.id)).filter(
@@ -33,6 +36,7 @@ def dashboard(hackathon_id: int, db: Session = Depends(get_db),
         "phase_actuelle": h.phase_actuelle, "phase_label": h.phase_label,
         "statut": h.statut,
         "nb_inscrits": nb_inscrits, "nb_en_attente": nb_attente,
+        "nb_participants": nb_participants,
         "nb_soumissions": nb_soum, "nb_evalues": nb_eval,
         "taux_completion": taux,
     }
