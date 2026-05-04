@@ -361,10 +361,14 @@
             <span class="member-block__title">Membre ${i + 1}</span>
             <span class="badge ${req ? 'badge-blue' : 'badge-gray'}">${req ? 'Chef d\'équipe' : 'Facultatif'}</span>
           </div>
-          <div class="form-grid-2">
+          <div class="form-grid-3">
             <div class="form-group">
               <label class="form-label">Prénom et nom${req ? ' <span class="required">*</span>' : ''}</label>
               <input class="form-control" type="text" id="m-nom-${i}" placeholder="Prénom Nom" value="${m.nom || ''}" ${req ? 'required' : ''}/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email${req ? ' <span class="required">*</span>' : ''}</label>
+              <input class="form-control" type="email" id="m-email-${i}" placeholder="email@ensae.sn" value="${m.email || ''}" ${req ? 'required' : ''}/>
             </div>
             <div class="form-group">
               <label class="form-label">Filière</label>
@@ -511,6 +515,7 @@
     if (n === 3) {
       state.membres = Array.from({length: state.nb_membres}, (_, i) => ({
         nom:     document.getElementById(`m-nom-${i}`)?.value.trim() || '',
+        email:   document.getElementById(`m-email-${i}`)?.value.trim() || '',
         filiere: document.getElementById(`m-filiere-${i}`)?.value || ''
       }));
       if (!state.membres[0]?.nom) {

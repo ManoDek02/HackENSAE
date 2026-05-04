@@ -356,7 +356,8 @@
                 <button class="btn btn-primary btn-sm" onclick="saveMembres()" id="btn-save-membres">Enregistrer</button>
               </div>
             </div>
-            <div style="margin-top:var(--space-4); text-align:right;">
+            <div style="margin-top:var(--space-4); display:flex; justify-content:space-between; align-items:center;">
+              <button id="btn-delete-equipe" class="btn btn-ghost btn-sm" style="display:none; color:var(--error-dark);" onclick="deleteInscription()">Annuler l'inscription</button>
               <button id="btn-edit-equipe" class="btn btn-outline btn-sm" style="display:none;" onclick="toggleEditMembres(true)">Modifier l'équipe</button>
             </div>
           </div>
@@ -522,7 +523,7 @@ function renderMembres() {
       <div class="membre-avatar">${initials}</div>
       <div style="flex:1;">
         <div class="membre-name">${m.nom}${i===0?' <span class="badge badge-blue" style="font-size:0.65rem;padding:1px 6px;margin-left:4px;">Chef</span>':''}</div>
-        <div class="membre-filiere">${m.filiere||'—'}</div>
+        <div class="membre-filiere">${m.filiere||'—'} ${m.email ? `• ${m.email}` : ''}</div>
       </div>
     </div>`;
   }).join('') || '<p style="color:var(--gray-400);font-size:0.875rem;">Aucun membre renseigné.</p>';
@@ -557,6 +558,9 @@ function renderEditMembresList() {
         <input type="text" class="form-control" value="${m.nom || ''}" placeholder="Nom et prénom" oninput="editMembresData[${i}].nom=this.value" ${i===0?'disabled':''} style="${i===0?'background:var(--gray-50);':''}"/>
       </div>
       <div style="flex:1;">
+        <input type="email" class="form-control" value="${m.email || ''}" placeholder="Email" oninput="editMembresData[${i}].email=this.value" />
+      </div>
+      <div style="flex:1;">
         <input type="text" class="form-control" value="${m.filiere || ''}" placeholder="Filière (ex: ISE 1)" oninput="editMembresData[${i}].filiere=this.value" />
       </div>
       ${i > 0 ? `<button class="btn btn-outline" style="padding:10px; color:var(--error-dark); border-color:var(--error-light);" onclick="removeMembreInput(${i})">X</button>` : `<div style="width:40px;"></div>`}
@@ -570,7 +574,7 @@ function addMembreInput() {
     toast(`Ce hackathon est limité à ${max} membres maximum.`, 'warning');
     return;
   }
-  editMembresData.push({ nom: '', filiere: '' });
+  editMembresData.push({ nom: '', email: '', filiere: '' });
   renderEditMembresList();
 }
 
@@ -603,6 +607,23 @@ async function saveMembres() {
   } finally {
     btn.disabled = false;
     btn.textContent = 'Enregistrer';
+  }
+}
+
+async function deleteInscription() {
+  if (!confirm('Êtes-vous sûr de vouloir annuler votre inscription ? Cette action est irréversible et supprimera toute votre équipe.')) return;
+  const btn = document.getElementById('btn-delete-equipe');
+  btn.disabled = true;
+  btn.textContent = 'Suppression...';
+  
+  try {
+    await apiFetch('/inscriptions/' + INSCRIPTION.id, { method: 'DELETE' });
+    toast('Inscription annulée avec succès.', 'success');
+    setTimeout(() => window.location.reload(), 1500);
+  } catch (err) {
+    toast(err.message || 'Erreur lors de la suppression.', 'error');
+    btn.disabled = false;
+    btn.textContent = 'Annuler l\'inscription';
   }
 }
 
@@ -789,12 +810,15 @@ async function init() {
         soumBadge.textContent= HACKATHON.statut==='soumission'?'Soumissions ouvertes':'En attente';
       }
 
-      // Allow editing team only if hackathon is in inscriptions phase
+      // Allow editing team only if hackathon is in inscriptions phase AND user is chef
       const btnEdit = document.getElementById('btn-edit-equipe');
-      if (btnEdit && HACKATHON.statut === 'inscriptions') {
-        btnEdit.style.display = 'inline-block';
-      } else if (btnEdit) {
-        btnEdit.style.display = 'none';
+      const btnDelete = document.getElementById('btn-delete-equipe');
+      if (HACKATHON.statut === 'inscriptions' && INSCRIPTION.chef_id === USER.id) {
+        if (btnEdit) btnEdit.style.display = 'inline-block';
+        if (btnDelete) btnDelete.style.display = 'inline-block';
+      } else {
+        if (btnEdit) btnEdit.style.display = 'none';
+        if (btnDelete) btnDelete.style.display = 'none';
       }
 
       renderMembres();

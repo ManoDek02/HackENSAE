@@ -20,6 +20,7 @@ router = APIRouter()
 class MembreIn(BaseModel):
     nom: str
     filiere: Optional[str] = None
+    email: Optional[EmailStr] = None
 
 class InscriptionIn(BaseModel):
     hackathon_id: int
@@ -145,11 +146,23 @@ def list_inscriptions(hackathon_id: Optional[int] = None,
 
 @router.get("/me")
 def my_inscriptions(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    inscriptions = db.query(Inscription).filter(Inscription.chef_id == current_user.id).all()
+    all_inscriptions = db.query(Inscription).all()
+    user_inscriptions = []
+    
+    for i in all_inscriptions:
+        if i.chef_id == current_user.id:
+            user_inscriptions.append(i)
+        elif i.membres and isinstance(i.membres, list):
+            for m in i.membres:
+                if m.get("email") and str(m.get("email")).lower() == current_user.email.lower():
+                    user_inscriptions.append(i)
+                    break
+
     return [
         {
             "id": i.id,
             "hackathon_id": i.hackathon_id,
+            "chef_id": i.chef_id,
             "nom_equipe": i.nom_equipe,
             "email_contact": i.email_contact,
             "membres": i.membres,
@@ -159,7 +172,7 @@ def my_inscriptions(db: Session = Depends(get_db), current_user=Depends(get_curr
             "statut": i.statut,
             "created_at": i.created_at,
         }
-        for i in inscriptions
+        for i in user_inscriptions
     ]
 
 @router.patch("/{inscription_id}/statut")
@@ -219,3 +232,21 @@ def update_membres(inscription_id: int, data: UpdateMembresIn, db: Session = Dep
     db.commit()
     db.refresh(insc)
     return insc
+
+@router.delete("/{inscription_id}", status_code=204)
+def delete_inscription(inscription_id: int, db: Session = Depends(get_db),
+                       current_user=Depends(get_current_user)):
+    insc = db.query(Inscription).filter(
+        Inscription.id == inscription_id,
+        Inscription.chef_id == current_user.id
+    ).first()
+    if not insc:
+        raise HTTPException(status_code=404, detail="Inscription introuvable ou vous n'êtes pas le chef d'équipe.")
+    
+    hack = db.query(Hackathon).filter(Hackathon.id == insc.hackathon_id).first()
+    if hack and hack.statut != "inscriptions":
+        raise HTTPException(status_code=403, detail="Vous ne pouvez pas vous désinscrire car la phase d'inscriptions est terminée.")
+        
+    db.delete(insc)
+    db.commit()
+    return None
