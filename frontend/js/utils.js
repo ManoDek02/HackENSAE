@@ -15,6 +15,13 @@ async function apiFetch(path, options = {}) {
 
   const res = await fetch(url, { ...options, headers });
   const data = await res.json().catch(() => ({}));
+  
+  if (res.status === 401) {
+    Auth.clear();
+    window.location.href = '/pages/login.html';
+    throw new Error("Session expirée. Redirection vers la connexion...");
+  }
+  
   if (!res.ok) throw new Error(data.detail || `Erreur ${res.status}`);
   return data;
 }
