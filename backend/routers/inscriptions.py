@@ -13,6 +13,7 @@ bearer = HTTPBearer(auto_error=False)
 from backend.database import get_db
 from backend.models.models import Inscription, Hackathon
 from backend.core.security import get_current_user, require_role
+from backend.core.mailer import send_email
 
 router = APIRouter()
 
@@ -67,6 +68,28 @@ def creer_inscription(data: InscriptionIn, db: Session = Depends(get_db),
         livrable_type=data.livrable_type, description=data.description,
     )
     db.add(insc); db.commit(); db.refresh(insc)
+    
+    # ── Notification Email Organisateur ──
+    try:
+        orga_email = "dossekoumano@gmail.com"
+        orga_nom = hack.organisateur or "Organisateur"
+        if hack.createur and hack.createur.email:
+            orga_email = hack.createur.email
+            orga_nom = f"{hack.createur.prenom} {hack.createur.nom}"
+
+        body = f"""Bonjour {orga_nom},
+
+Une nouvelle équipe vient de s'inscrire au hackathon "{hack.titre}".
+Nom de l'équipe : {insc.nom_equipe}
+Contact         : {insc.email_contact}
+Membres         : {nb}
+
+Veuillez vous connecter au tableau de bord pour valider ou refuser cette inscription.
+"""
+        send_email(to_email=orga_email, subject=f"Nouvelle inscription : {insc.nom_equipe}", body=body)
+    except Exception as e:
+        print("Erreur envoi email orga :", e)
+
     return insc
 
 @router.get("")
@@ -148,6 +171,26 @@ def changer_statut(inscription_id: int, statut: str, db: Session = Depends(get_d
     if not insc:
         raise HTTPException(status_code=404, detail="Inscription introuvable.")
     insc.statut = statut; db.commit()
+    
+    # ── Notification Email Équipe ──
+    try:
+        hack = db.query(Hackathon).filter(Hackathon.id == insc.hackathon_id).first()
+        status_fr = "VALIDÉE" if statut == "validee" else "REFUSÉE"
+        body = f"""Bonjour l'équipe {insc.nom_equipe},
+
+Le statut de votre inscription au hackathon "{hack.titre}" a été mis à jour.
+Nouveau statut : {status_fr}
+
+"""
+        if statut == "validee":
+            body += "Félicitations ! Vous pouvez maintenant accéder à votre espace participant sur la plateforme.\n"
+        else:
+            body += "Malheureusement, votre inscription n'a pas pu être retenue.\n"
+            
+        send_email(to_email=insc.email_contact, subject=f"Statut de votre inscription : {status_fr}", body=body)
+    except Exception as e:
+        print("Erreur envoi email participant :", e)
+        
     return {"message": f"Statut mis à jour : {statut}"}
 
 class UpdateMembresIn(BaseModel):

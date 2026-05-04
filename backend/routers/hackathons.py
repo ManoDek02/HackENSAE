@@ -38,10 +38,12 @@ class HackathonCreate(BaseModel):
 def get_stats(db: Session = Depends(get_db)):
     from backend.models.models import Soumission
     nb_hacks   = db.query(func.count(Hackathon.id)).scalar() or 0
-    nb_equipes = db.query(func.count(Inscription.id)).filter(Inscription.statut=="validee").scalar() or 0
+    inscriptions_validees = db.query(Inscription).filter(Inscription.statut=="validee").all()
+    nb_equipes = len(inscriptions_validees)
+    nb_participants = sum(len(i.membres) if isinstance(i.membres, list) else 0 for i in inscriptions_validees)
     nb_projets = db.query(func.count(Soumission.id)).filter(Soumission.statut.in_(["soumise","evaluee"])).scalar() or 0
     return {"hackathons": nb_hacks, "equipes": nb_equipes,
-            "participants": nb_equipes * 3, "projets": nb_projets}
+            "participants": nb_participants, "projets": nb_projets}
 
 
 # ── CRUD ──────────────────────────────────────────────────────
@@ -71,7 +73,7 @@ def list_hackathons(statut: Optional[str] = None, db: Session = Depends(get_db))
 
 @router.post("", status_code=201)
 def create_hackathon(data: HackathonCreate, db: Session = Depends(get_db),
-                     _=Depends(require_role("organisateur","admin"))):
+                     current_user=Depends(require_role("organisateur","admin"))):
     phases_tech  = ["Communication","Inscriptions","Formation","Développement","Soumission","Évaluation"]
     phases_dataj = ["Communication","Lancement","Production","Soumission","Évaluation"]
     phases_total = 6 if data.type == "tech" else 5
@@ -82,6 +84,7 @@ def create_hackathon(data: HackathonCreate, db: Session = Depends(get_db),
         statut="a_venir", phase_actuelle=1,
         phases_total=phases_total,
         phase_label=(phases_tech if data.type=="tech" else phases_dataj)[0],
+        createur_id=current_user.id,
         taille_equipe_min=data.taille_equipe_min,
         taille_equipe_max=data.taille_equipe_max,
         date_debut=data.date_debut,

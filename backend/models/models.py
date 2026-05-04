@@ -39,6 +39,7 @@ class Hackathon(Base):
     titre           = Column(String(200), nullable=False)
     description     = Column(Text)
     organisateur    = Column(String(200))
+    createur_id     = Column(Integer, ForeignKey("utilisateurs.id"), nullable=True)
     type            = Column(SAEnum("tech", "datajournalisme", name="type_hack_enum"))
 
     # Statut et phases
@@ -75,6 +76,7 @@ class Hackathon(Base):
     # Relations
     inscriptions = relationship("Inscription", back_populates="hackathon")
     soumissions  = relationship("Soumission",  back_populates="hackathon")
+    createur     = relationship("Utilisateur", foreign_keys=[createur_id])
 
 
 # ── Équipes / Inscriptions ────────────────────────────────────
