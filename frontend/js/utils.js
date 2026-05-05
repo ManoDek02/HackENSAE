@@ -178,7 +178,7 @@ function renderHackathonCard(h) {
       </div>
       <div class="card__footer">
         <span class="text-xs text-muted">${nb} équipe${nb!==1?'s':''} inscrite${nb!==1?'s':''}</span>
-        <a href="pages/hackathon-detail.html?type=${h.type}" class="btn btn-primary btn-sm">Voir & s'inscrire</a>
+        <a href="pages/hackathon-detail.html?id=${h.id}" class="btn btn-primary btn-sm">Voir & s'inscrire</a>
       </div>
     </article>`;
 }

@@ -511,7 +511,7 @@
       <div class="detail-hero__content">
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-4);flex-wrap:wrap;margin-bottom:var(--space-4);">
           <div>${statusBadge(H.statut)}</div>
-          <a href="./inscription.html?type=${H.type}" class="btn" style="background:rgba(255,255,255,0.15);color:var(--white);border:1px solid rgba(255,255,255,0.3);">S'inscrire</a>
+          <a href="./inscription.html?id=${H.id}" class="btn" style="background:rgba(255,255,255,0.15);color:var(--white);border:1px solid rgba(255,255,255,0.3);">S'inscrire</a>
         </div>
         <h1 style="color:var(--white);font-size:1.5rem;margin-bottom:4px;">${H.titre}</h1>
         <p style="color:${orgColor};font-size:0.875rem;margin-bottom:var(--space-5);">${H.organisateur}</p>
@@ -651,7 +651,7 @@
         document.getElementById('equipes-list').innerHTML = `
       <div style="text-align:center;padding:var(--space-10) var(--space-6);color:var(--gray-500);">
         <p style="font-size:0.9rem;">Aucune équipe inscrite pour le moment.</p>
-        <a href="./inscription.html?type=${H.type}" class="btn btn-primary" style="margin-top:var(--space-4);">Être la première équipe</a>
+        <a href="./inscription.html?id=${H.id}" class="btn btn-primary" style="margin-top:var(--space-4);">Être la première équipe</a>
       </div>`;
         return;
       }
@@ -683,7 +683,7 @@
       <div class="cta-detail-row"><span class="cta-detail-row__label">Statut</span><span>${statusBadge(H.statut)}</span></div>
       <div class="cta-detail-row"><span class="cta-detail-row__label">Taille équipe</span><span class="cta-detail-row__val">1 à ${H.taille_equipe_max} pers.</span></div>
       ${days !== null ? `<div class="cta-detail-row"><span class="cta-detail-row__label">Inscriptions ferment</span><span class="cta-detail-row__val ${days <= 5 ? 'soon' : ''}">dans ${days}j</span></div>` : ''}
-      <a href="./inscription.html?type=${H.type}" class="btn btn-primary btn-full" style="margin-top:var(--space-4);">S'inscrire à ce hackathon</a>
+      <a href="./inscription.html?id=${H.id}" class="btn btn-primary btn-full" style="margin-top:var(--space-4);">S'inscrire à ce hackathon</a>
       <a href="./mon-espace.html" class="btn btn-outline btn-full" style="margin-top:var(--space-2);">Déjà inscrit — Mon espace</a>
     </div>`;
 
