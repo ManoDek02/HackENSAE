@@ -1,48 +1,360 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>HackENSAE — Plateforme des hackathons ENSAE</title>
-  <link rel="stylesheet" href="css/design-system.css?v=1.1"/>
+  <link rel="stylesheet" href="css/design-system.css?v=1.1" />
   <style>
-    .site-hero{background:var(--blue-900);padding:var(--space-16) 0 var(--space-12);position:relative;overflow:hidden;}
-    .site-hero::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle at 75% 20%,var(--blue-800) 0%,transparent 50%),radial-gradient(circle at 20% 80%,var(--blue-800) 0%,transparent 45%);}
-    .site-hero__inner{position:relative;z-index:1;max-width:680px;}
-    .site-hero__eyebrow{display:inline-flex;align-items:center;gap:var(--space-2);padding:5px 14px;background:rgba(55,138,221,0.2);border:1px solid var(--blue-600);border-radius:var(--radius-full);font-size:0.8125rem;color:var(--blue-200);margin-bottom:var(--space-5);}
-    .site-hero__eyebrow span{width:7px;height:7px;border-radius:50%;background:var(--blue-400);animation:pulse 2s ease infinite;}
-    @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.5;transform:scale(0.85);}}
-    .site-hero h1{color:var(--white);margin-bottom:var(--space-4);}
-    .site-hero h1 em{font-style:normal;color:var(--blue-300);font-family:var(--font-display);}
-    .site-hero__desc{color:var(--blue-100);font-size:1.05rem;line-height:1.7;margin-bottom:var(--space-8);max-width:560px;}
-    .site-hero__actions{display:flex;gap:var(--space-3);flex-wrap:wrap;}
-    .site-hero__stats{display:flex;gap:var(--space-8);margin-top:var(--space-10);padding-top:var(--space-8);border-top:1px solid var(--blue-800);flex-wrap:wrap;}
-    .hero-stat__value{font-family:var(--font-display);font-size:2rem;color:var(--white);line-height:1;}
-    .hero-stat__label{font-size:0.8125rem;color:var(--blue-300);margin-top:4px;}
-    .filters-bar{display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap;margin-bottom:var(--space-6);}
-    .filter-btn{padding:7px 16px;border-radius:var(--radius-full);font-size:0.8125rem;border:1px solid var(--gray-200);background:var(--white);color:var(--gray-700);cursor:pointer;transition:all var(--transition);}
-    .filter-btn:hover{border-color:var(--blue-300);color:var(--blue-700);background:var(--blue-25);}
-    .filter-btn.active{border-color:var(--blue-600);color:var(--blue-700);background:var(--blue-50);font-weight:500;}
-    .cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:var(--space-5);}
-    .empty-state{grid-column:1/-1;text-align:center;padding:var(--space-16) var(--space-6);color:var(--gray-500);}
-    .cta-band{background:var(--blue-25);border:1px solid var(--blue-100);border-radius:var(--radius-xl);padding:var(--space-10) var(--space-8);display:flex;align-items:center;justify-content:space-between;gap:var(--space-8);flex-wrap:wrap;}
-    .cta-band h2{color:var(--blue-900);margin-bottom:var(--space-2);}
-    .cta-band p{color:var(--gray-500);font-size:0.9rem;}
-    .skeleton{border-radius:var(--radius-lg);border:1px solid var(--gray-200);overflow:hidden;}
-    .skeleton__header{height:90px;background:var(--gray-200);animation:shimmer 1.4s ease infinite;}
-    .skeleton__body{padding:var(--space-5);display:flex;flex-direction:column;gap:var(--space-3);}
-    .skeleton__line{height:13px;background:var(--gray-100);border-radius:4px;animation:shimmer 1.4s ease infinite;}
-    .skeleton__line--short{width:60%;}
-    @keyframes shimmer{0%,100%{opacity:1;}50%{opacity:0.5;}}
+    .site-hero {
+      background: var(--blue-900);
+      padding: var(--space-16) 0 var(--space-12);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .site-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle at 75% 20%, var(--blue-800) 0%, transparent 50%), radial-gradient(circle at 20% 80%, var(--blue-800) 0%, transparent 45%);
+    }
+
+    .site-hero__inner {
+      position: relative;
+      z-index: 1;
+      max-width: 680px;
+    }
+
+    .site-hero__eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: 5px 14px;
+      background: rgba(55, 138, 221, 0.2);
+      border: 1px solid var(--blue-600);
+      border-radius: var(--radius-full);
+      font-size: 0.8125rem;
+      color: var(--blue-200);
+      margin-bottom: var(--space-5);
+    }
+
+    .site-hero__eyebrow span {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--blue-400);
+      animation: pulse 2s ease infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.5;
+        transform: scale(0.85);
+      }
+    }
+
+    .site-hero h1 {
+      color: var(--white);
+      margin-bottom: var(--space-4);
+    }
+
+    .site-hero h1 em {
+      font-style: normal;
+      color: var(--blue-300);
+      font-family: var(--font-display);
+    }
+
+    .site-hero__desc {
+      color: var(--blue-100);
+      font-size: 1.05rem;
+      line-height: 1.7;
+      margin-bottom: var(--space-8);
+      max-width: 560px;
+    }
+
+    .site-hero__actions {
+      display: flex;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+    }
+
+    .site-hero__stats {
+      display: flex;
+      gap: var(--space-8);
+      margin-top: var(--space-10);
+      padding-top: var(--space-8);
+      border-top: 1px solid var(--blue-800);
+      flex-wrap: wrap;
+    }
+
+    .hero-stat__value {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      color: var(--white);
+      line-height: 1;
+    }
+
+    .hero-stat__label {
+      font-size: 0.8125rem;
+      color: var(--blue-300);
+      margin-top: 4px;
+    }
+
+    .filters-bar {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+      margin-bottom: var(--space-6);
+    }
+
+    .filter-btn {
+      padding: 7px 16px;
+      border-radius: var(--radius-full);
+      font-size: 0.8125rem;
+      border: 1px solid var(--gray-200);
+      background: var(--white);
+      color: var(--gray-700);
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+
+    .filter-btn:hover {
+      border-color: var(--blue-300);
+      color: var(--blue-700);
+      background: var(--blue-25);
+    }
+
+    .filter-btn.active {
+      border-color: var(--blue-600);
+      color: var(--blue-700);
+      background: var(--blue-50);
+      font-weight: 500;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: var(--space-5);
+    }
+
+    .empty-state {
+      grid-column: 1/-1;
+      text-align: center;
+      padding: var(--space-16) var(--space-6);
+      color: var(--gray-500);
+    }
+
+    .cta-band {
+      background: var(--blue-25);
+      border: 1px solid var(--blue-100);
+      border-radius: var(--radius-xl);
+      padding: var(--space-10) var(--space-8);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-8);
+      flex-wrap: wrap;
+    }
+
+    .cta-band h2 {
+      color: var(--blue-900);
+      margin-bottom: var(--space-2);
+    }
+
+    .cta-band p {
+      color: var(--gray-500);
+      font-size: 0.9rem;
+    }
+
+    .skeleton {
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--gray-200);
+      overflow: hidden;
+    }
+
+    .skeleton__header {
+      height: 90px;
+      background: var(--gray-200);
+      animation: shimmer 1.4s ease infinite;
+    }
+
+    .skeleton__body {
+      padding: var(--space-5);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+
+    .skeleton__line {
+      height: 13px;
+      background: var(--gray-100);
+      border-radius: 4px;
+      animation: shimmer 1.4s ease infinite;
+    }
+
+    .skeleton__line--short {
+      width: 60%;
+    }
+
+    @keyframes shimmer {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.5;
+      }
+    }
+
+    /* ── Partenaires Premium ──────────────────────────────────────── */
+    .partners-section {
+      position: relative;
+      background: var(--blue-950);
+      padding: var(--space-16) 0;
+      overflow: hidden;
+      border-top: 1px solid var(--blue-800);
+    }
+
+    .partners-section::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle at 50% 50%, rgba(55, 138, 221, 0.05) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .partner-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius-xl);
+      padding: var(--space-6) var(--space-8);
+      min-width: 230px;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      text-decoration: none;
+      position: relative;
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .partner-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    a.partner-card:hover {
+      transform: translateY(-8px);
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(55, 138, 221, 0.4);
+      box-shadow: 0 15px 35px rgba(4, 44, 83, 0.5), 0 0 20px rgba(55, 138, 221, 0.1);
+    }
+
+    a.partner-card:hover::before {
+      opacity: 1;
+    }
+
+    .partner-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue-600), var(--blue-400));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: var(--space-4);
+      color: var(--white);
+      font-size: 1.2rem;
+      font-weight: bold;
+      box-shadow: 0 4px 12px rgba(55, 138, 221, 0.3);
+    }
+
+    .partner-name {
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      color: var(--white);
+      letter-spacing: 0.02em;
+    }
+
+    .partner-sub {
+      font-size: 0.75rem;
+      color: var(--blue-300);
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .clubs-container {
+      margin-top: var(--space-12);
+      padding-top: var(--space-8);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      max-width: 800px;
+      margin-inline: auto;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .club-tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 18px;
+      background: rgba(55, 138, 221, 0.08);
+      border: 1px solid rgba(55, 138, 221, 0.25);
+      border-radius: var(--radius-full);
+      color: var(--blue-200);
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      cursor: default;
+    }
+
+    .club-tag:hover {
+      background: rgba(55, 138, 221, 0.18);
+      border-color: var(--blue-400);
+      color: var(--white);
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(55, 138, 221, 0.2);
+    }
   </style>
 </head>
+
 <body>
   <header>
     <nav class="navbar">
       <div class="container navbar__inner">
         <a href="index.html" class="navbar__logo">
           <div class="navbar__logo-mark">
-            <svg viewBox="0 0 18 18" fill="none"><path d="M3 14L9 4L15 14" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.5 10H12.5" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <svg viewBox="0 0 18 18" fill="none">
+              <path d="M3 14L9 4L15 14" stroke="white" stroke-width="1.8" stroke-linecap="round"
+                stroke-linejoin="round" />
+              <path d="M5.5 10H12.5" stroke="white" stroke-width="1.8" stroke-linecap="round" />
+            </svg>
           </div>
           <span class="navbar__logo-text">HackENSAE</span>
         </a>
@@ -64,16 +376,29 @@
       <div class="site-hero__inner">
         <div class="site-hero__eyebrow"><span></span>Plateforme officielle ENSAE Dakar</div>
         <h1 class="display-xl">Les hackathons<br><em>ENSAE</em> en un lieu</h1>
-        <p class="site-hero__desc">Inscrivez votre équipe, suivez l'avancement de la compétition et soumettez vos projets — que ce soit pour le hackathon Tech &amp; Data Innovation ou le concours Datajournalisme.</p>
+        <p class="site-hero__desc">Inscrivez votre équipe, suivez l'avancement de la compétition et soumettez vos
+          projets — que ce soit pour le hackathon Tech &amp; Data Innovation ou le concours Datajournalisme.</p>
         <div class="site-hero__actions">
           <a href="#hackathons" class="btn btn-primary btn-lg">Voir les hackathons</a>
           <a href="pages/login.html" class="btn btn-ghost btn-lg">Créer un compte</a>
         </div>
         <div class="site-hero__stats">
-          <div><div class="hero-stat__value" id="stat-hackathons">—</div><div class="hero-stat__label">Hackathons actifs</div></div>
-          <div><div class="hero-stat__value" id="stat-equipes">—</div><div class="hero-stat__label">Équipes inscrites</div></div>
-          <div><div class="hero-stat__value" id="stat-participants">—</div><div class="hero-stat__label">Participants</div></div>
-          <div><div class="hero-stat__value" id="stat-projets">—</div><div class="hero-stat__label">Projets soumis</div></div>
+          <div>
+            <div class="hero-stat__value" id="stat-hackathons">—</div>
+            <div class="hero-stat__label">Hackathons actifs</div>
+          </div>
+          <div>
+            <div class="hero-stat__value" id="stat-equipes">—</div>
+            <div class="hero-stat__label">Équipes inscrites</div>
+          </div>
+          <div>
+            <div class="hero-stat__value" id="stat-participants">—</div>
+            <div class="hero-stat__label">Participants</div>
+          </div>
+          <div>
+            <div class="hero-stat__value" id="stat-projets">—</div>
+            <div class="hero-stat__label">Projets soumis</div>
+          </div>
         </div>
       </div>
     </div>
@@ -82,7 +407,10 @@
   <section class="section" id="hackathons">
     <div class="container">
       <div class="section-header">
-        <div><p class="section-eyebrow">Compétitions</p><h2>Hackathons en cours &amp; à venir</h2></div>
+        <div>
+          <p class="section-eyebrow">Compétitions</p>
+          <h2>Hackathons en cours &amp; à venir</h2>
+        </div>
       </div>
       <div class="filters-bar">
         <button class="filter-btn active" data-filter="all">Tous</button>
@@ -92,8 +420,71 @@
         <button class="filter-btn" data-filter="termine">Terminés</button>
       </div>
       <div class="cards-grid" id="hackathons-grid">
-        <div class="skeleton"><div class="skeleton__header"></div><div class="skeleton__body"><div class="skeleton__line"></div><div class="skeleton__line skeleton__line--short"></div><div class="skeleton__line"></div></div></div>
-        <div class="skeleton"><div class="skeleton__header"></div><div class="skeleton__body"><div class="skeleton__line"></div><div class="skeleton__line skeleton__line--short"></div><div class="skeleton__line"></div></div></div>
+        <div class="skeleton">
+          <div class="skeleton__header"></div>
+          <div class="skeleton__body">
+            <div class="skeleton__line"></div>
+            <div class="skeleton__line skeleton__line--short"></div>
+            <div class="skeleton__line"></div>
+          </div>
+        </div>
+        <div class="skeleton">
+          <div class="skeleton__header"></div>
+          <div class="skeleton__body">
+            <div class="skeleton__line"></div>
+            <div class="skeleton__line skeleton__line--short"></div>
+            <div class="skeleton__line"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="partners-section" id="partenaires">
+    <div class="container">
+      <div class="section-header"
+        style="text-align: center; justify-content: center; flex-direction: column; align-items: center; gap: 8px; margin-bottom: var(--space-10);">
+        <p class="section-eyebrow" style="color: var(--blue-400);">Ils nous font confiance</p>
+        <h2 style="color: var(--white); margin: 0; font-size: 2.2rem;">Nos Partenaires & Soutiens</h2>
+      </div>
+
+      <!-- Partenaires externes -->
+      <div
+        style="display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-5); max-width: 1000px; margin: 0 auto;">
+        <a href="https://creg-center.org/" target="_blank" class="partner-card">
+          <div class="partner-icon">CR</div>
+          <span class="partner-name">CREG</span>
+          <span class="partner-sub">Partenaire</span>
+        </a>
+        <a href="https://dswb.africa/" target="_blank" class="partner-card">
+          <div class="partner-icon" style="background: linear-gradient(135deg, #059669, #10B981);">DS</div>
+          <span class="partner-name">DSWB Sénégal</span>
+          <span class="partner-sub">Partenaire</span>
+        </a>
+        <a href="https://www.concree.com/" target="_blank" class="partner-card">
+          <div class="partner-icon" style="background: linear-gradient(135deg, #D97706, #F59E0B);">CO</div>
+          <span class="partner-name">CONCREE</span>
+          <span class="partner-sub">Partenaire</span>
+        </a>
+        <a href="https://sn.linkedin.com/company/cabinet-d-evaluation-international-cesepp-suarl/" target="_blank"
+          class="partner-card">
+          <div class="partner-icon" style="background: linear-gradient(135deg, #7C3AED, #8B5CF6);">CE</div>
+          <span class="partner-name">CESEPP Afrique</span>
+          <span class="partner-sub">Partenaire</span>
+        </a>
+      </div>
+
+      <!-- Clubs et Assocs -->
+      <div class="clubs-container">
+        <p
+          style="font-size: 0.875rem; color: rgba(255,255,255,0.5); margin-bottom: var(--space-5); text-transform: uppercase; letter-spacing: 0.05em;">
+          Avec le soutien des clubs et associations</p>
+        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-3);">
+          <span class="club-tag">BSA</span>
+          <span class="club-tag">Club Presse</span>
+          <span class="club-tag">English CLUB</span>
+          <span class="club-tag">Club Info</span>
+        </div>
       </div>
     </div>
   </section>
@@ -103,7 +494,8 @@
       <div class="footer-inner">
         <span class="footer-logo">HackENSAE</span>
         <span class="footer-credits">Club Informatique &amp; Club Presse · ENSAE Dakar · 2025</span>
-        <div class="footer-links"><a href="pages/contact.html">Contact</a><a href="pages/reglement.html">Règlement</a><a href="pages/login.html?role=organisateur">Organisateurs</a></div>
+        <div class="footer-links"><a href="pages/contact.html">Contact</a><a href="pages/reglement.html">Règlement</a><a
+            href="pages/login.html?role=organisateur">Organisateurs</a></div>
       </div>
     </div>
   </footer>
@@ -132,10 +524,10 @@
           apiFetch('/hackathons/stats'),
         ]);
         allHackathons = hackathons;
-        document.getElementById('stat-hackathons').textContent   = stats.hackathons;
-        document.getElementById('stat-equipes').textContent      = stats.equipes;
+        document.getElementById('stat-hackathons').textContent = stats.hackathons;
+        document.getElementById('stat-equipes').textContent = stats.equipes;
         document.getElementById('stat-participants').textContent = stats.participants;
-        document.getElementById('stat-projets').textContent      = stats.projets;
+        document.getElementById('stat-projets').textContent = stats.projets;
         renderGrid(allHackathons);
       } catch (err) {
         toast('Impossible de charger les hackathons.', 'error');
@@ -156,4 +548,5 @@
     init();
   </script>
 </body>
+
 </html>
