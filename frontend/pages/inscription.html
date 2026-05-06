@@ -438,7 +438,7 @@
       <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:var(--space-6);margin-bottom:var(--space-4);">
         <h3 style="margin-bottom:var(--space-5);color:var(--blue-900);">Thématique choisie</h3>
         <div class="thematique-grid">
-          ${H.thematiques.map(t => `<div class="thematique-pill ${state.thematique === t ? 'selected' : ''}" onclick="selectThematique(this,'${t}')">${t}</div>`).join('')}
+          ${H.thematiques.map(t => `<div class="thematique-pill ${state.thematique === t ? 'selected' : ''}" data-thematique="${t.replace(/"/g, '&quot;')}" onclick="selectThematique(this)">${t}</div>`).join('')}
         </div>
         <p class="form-hint">Une seule thématique par équipe. Les thématiques sont imposées par l'organisation.</p>
       </div>
@@ -615,10 +615,10 @@
     el.classList.add('selected');
     state.domaine = val;
   }
-  function selectThematique(el, val) {
+  function selectThematique(el) {
     document.querySelectorAll('.thematique-pill').forEach(p => p.classList.remove('selected'));
     el.classList.add('selected');
-    state.thematique = val;
+    state.thematique = el.getAttribute('data-thematique');
   }
   function selectLivrable(el, val) {
     document.querySelectorAll('.livrable-card').forEach(c => c.classList.remove('selected'));
